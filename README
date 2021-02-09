@@ -1,0 +1,20 @@
+README
+
+To run this project first run
+
+./make_key
+
+This will generate the key and initialize Terraform.
+
+To provision the environment
+
+./provision_terraform.py
+
+To run the tests and download the results
+
+./stress.py
+
+To destroy the environment
+
+./unprovision_terraform.py
+

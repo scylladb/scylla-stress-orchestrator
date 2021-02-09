@@ -1,0 +1,12 @@
+*/terraform.tfstate
+*/terraform.tfstate.backup
+key.pub
+key
+*/.terraform
+*/.terraform.lock.hcl
+*/.terraform.tfstate.lock.info
+benchmark.html
+trials/
+*.kate-swp
+environment.yml
+__pycache__/

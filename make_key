@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+if [ ! -f key ] ; then
+   echo "Generating"
+   ssh-keygen -b 2048 -t rsa -f key -q -N ""
+   chmod 400 key*
+else
+   echo "Key alreay found, skipping generation"
+fi
+
+echo "Init success"
+
