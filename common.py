@@ -118,7 +118,7 @@ class CassandraStress:
         dest_dir=os.path.join(dir, ip)
         os.makedirs(dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:*.{html,hdr} {dest_dir}')    
+        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:*.{{html,hdr}} {dest_dir}')    
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
     
     def get_results(self, dir):
