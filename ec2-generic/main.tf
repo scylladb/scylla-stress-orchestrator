@@ -256,15 +256,6 @@ output "prometheus_public_ip" {
     value = aws_instance.prometheus.*.public_ip
 }
 
-#data template_file "scylla_server_yml" {
-#    template = file("scylla_server.yml.tpl")
-#    vars = {
-#        ips       = join(",",aws_instance.cluster.*.private_ip)
-#        cluster   = "cluster1"
-#        dc        = "us-east-2"
-#    }
-#}
-
 # update prometheus
 resource "null_resource" "configure-prometheus" {
 
@@ -298,7 +289,6 @@ resource "null_resource" "configure-prometheus" {
         ]
     }
 }
-
 
 # ========== load generator ==========================
 

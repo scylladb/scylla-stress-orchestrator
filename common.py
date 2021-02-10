@@ -55,7 +55,6 @@ class HdrLogProcessor:
         tags = set()
         with open(filename, "r") as hdr_file:
             reader = csv.reader(hdr_file, delimiter=',')
-        
             # Skip headers
             for i in range(5):
                 next(reader, None)
@@ -80,6 +79,7 @@ def run_parallel(t, args_list):
         
 class CassandraStress:
     ssh_options="-i key -o StrictHostKeyChecking=no"
+    log_ssh = False
     
     def __init__(self, ips, properties):        
         self.properties = properties
@@ -90,9 +90,9 @@ class CassandraStress:
         
     def __install(self, ip):
         print(f'    [{ip}] Instaling cassandra-stress: started')
-        self.ssh(ip, f'sudo yum -y -q install java-1.8.0-openjdk')
-        self.ssh(ip, f'wget -q https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz')
-        self.ssh(ip, f'tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz')
+        self.__ssh(ip, f'sudo yum -y -q install java-1.8.0-openjdk')
+        self.__ssh(ip, f'wget -q -N https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz')
+        self.__ssh(ip, f'tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz')
         print(f'    [{ip}] Instaling cassandra-stress: done')   
 
     def install(self):
@@ -101,18 +101,32 @@ class CassandraStress:
         print("============== Instaling Cassandra-Stress: done =================")
 
     def __stress(self, ip, cmd):
+        print(cmd)
         cassandra_stress_dir=f'apache-cassandra-{self.cassandra_version}/tools/bin'
         full_cmd=f'{cassandra_stress_dir}/cassandra-stress {cmd}'
-        self.ssh(ip, full_cmd)
+        self.__ssh(ip, full_cmd)
 
     def stress(self, command):
         print("============== Cassandra-Stress: started ===========================")
         run_parallel(self.__stress, [(ip, command) for ip in self.ips])    
         print("============== Cassandra-Stress: done ==============================")
 
-    def ssh(self, ip, command):
+    def __ssh(self, ip, command):
+        if self.log_ssh:
+            print(command)
+        os.system(f'ssh {self.ssh_options} {self.user}@{ip} \'{command}\'')
+    
+    def ssh(self, command):
         #print(full_cmd)
-        os.system(f'ssh {self.ssh_options} {self.user}@{ip} "{command}"')
+        run_parallel(self.__ssh, [(ip, command) for ip in self.ips])    
+        
+    def __upload(self, ip, file):
+        os.system(f'scp {self.ssh_options} -q {file} {self.user}@{ip}:')    
+    
+    def upload(self, file):
+        print("============== Upload: started ===========================")
+        run_parallel(self.__upload, [(ip, file) for ip in self.ips])    
+        print("============== Upload-Stress: done ==============================")
     
     def __download(self, ip, dir):
         dest_dir=os.path.join(dir, ip)
@@ -129,9 +143,9 @@ class CassandraStress:
                  
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
-        self.ssh(ip, f'rm -fr *.html *.hdr')
+        self.__ssh(ip, f'rm -fr *.html *.hdr')
         # we need to make sure that the no old load generator is still running.
-        self.ssh(ip, f'killall -q -9 java')    
+        self.__ssh(ip, f'killall -q -9 java')    
         print(f'    [{ip}] Preparing: done')
 
     def prepare(self):
