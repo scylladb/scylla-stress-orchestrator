@@ -69,6 +69,16 @@ class HdrLogProcessor:
         
         os.chdir(old_cwd)
     
+def run_parallel(t, args_list):
+    threads = []
+    for a in args_list:
+        thread = Thread(target=t, args = a)
+        thread.start()
+        threads.append(thread)    
+    for thread in threads:
+        thread.join()
+    
+    
 class CassandraStress:
     ssh_options="-i key -o StrictHostKeyChecking=no"
     
@@ -88,13 +98,7 @@ class CassandraStress:
 
     def install(self):
         print("============== Instaling Cassandra-Stress: started =================")
-        threads = []
-        for ip in self.ips:
-            thread = Thread(target = self.__install, args = (ip,))
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
+        run_parallel(self.__install, [(ip,) for ip in self.ips])
         print("============== Instaling Cassandra-Stress: done =================")
 
     def __stress(self, ip, cmd):
@@ -104,14 +108,7 @@ class CassandraStress:
 
     def stress(self, command):
         print("============== Cassandra-Stress: started ===========================")
-        print(command)
-        threads = []
-        for ip in self.ips:
-            thread = Thread(target = self.__stress, args = (ip, command))
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
+        run_parallel(self.__stress, [(ip, command) for ip in self.ips])    
         print("============== Cassandra-Stress: done ==============================")
 
     def ssh(self, ip, command):
@@ -128,16 +125,8 @@ class CassandraStress:
     
     def get_results(self, dir):
         print("============== Getting results: started ===========================")
-        threads = []
-        for ip in self.ips:
-            thread = Thread(target = self.__download, args = (ip, dir))
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
-                    
-        HdrLogProcessor(self.properties).process(dir)
-        
+        run_parallel(self.__download, [(ip, dir) for ip in self.ips])                          
+        HdrLogProcessor(self.properties).process(dir)        
         print("============== Getting results: done ==============================")
                  
     def __prepare(self, ip):
@@ -150,14 +139,5 @@ class CassandraStress:
 
     def prepare(self):
         print('============== Preparing load generator: started ===================')
-        threads = []
-        for ip in self.ips:
-            thread = Thread(target = self.__prepare, args = (ip,))
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
+        run_parallel(self.__prepare, [(ip, ) for ip in self.ips])                              
         print('============== Preparing load generator: done ======================')    
-
-
-    
