@@ -34,6 +34,40 @@ class Iteration:
         print(f'Using iteration directory [{self.dir}]')
         
 
+class HdrLogMerging:
+    def __init__(self, properties):
+        self.properties = properties
+    
+    #def __log_merging(self, files):
+        
+    def merge_logs(self, dir):  
+        print("------------------ HdrLogMerging -------------------------------------")
+        print(dir)
+        # todo be careful with merging the merge file.
+        files_map = {}
+        
+        for hdr_file in glob.iglob(dir + '/*/*.hdr', recursive=True):
+            print(hdr_file)
+            base=os.path.splitext(os.path.basename(hdr_file))[0]
+            files = files_map.get(base)
+            if files == None:
+                files = []
+                files_map[base]=files
+            files.append(hdr_file)    
+        
+        cwd = os.getcwd()
+        jvm_path = self.properties['jvm_path']
+        for name,files in files_map.items():            
+            input = ""
+            for file in files:
+                input = input +" -ifp "+file
+            cmd = f'{jvm_path}/bin/java -cp {cwd}/lib/processor.jar CommandDispatcherMain union {input} -of {dir}/{name}.hdr'
+            print(cmd)
+            os.system(cmd)
+            
+        print("------------------ HdrLogMerging -------------------------------------")
+        
+
 class HdrLogProcessor:
     def __init__(self, properties):
         self.properties = properties
@@ -45,6 +79,7 @@ class HdrLogProcessor:
             self.__process(hdr_file)
             
     def __process(self, file):
+        print("------------------ HdrLogProcessor -------------------------------------")
         filename = os.path.basename(file)
         filename_no_ext = os.path.splitext(filename)[0]
         jvm_path = self.properties['jvm_path']
@@ -64,9 +99,10 @@ class HdrLogProcessor:
                 tags.add(tag)
          
         for tag in tags:
-            os.system(f'{jvm_path}/bin/java -cp {old_cwd}/lib/*.jar org.HdrHistogram.HistogramLogProcessor -i {filename} -o {filename_no_ext+"_"+tag} -csv -tag {tag}')
+            os.system(f'{jvm_path}/bin/java -cp {old_cwd}/lib/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor -i {filename} -o {filename_no_ext+"_"+tag} -csv -tag {tag}')
         
         os.chdir(old_cwd)
+        print("------------------ HdrLogProcessor -------------------------------------")
     
 def run_parallel(t, args_list):
     threads = []
@@ -138,6 +174,7 @@ class CassandraStress:
     def get_results(self, dir):
         print("============== Getting results: started ===========================")
         run_parallel(self.__download, [(ip, dir) for ip in self.ips])                          
+        HdrLogMerging(self.properties).merge_logs(dir)
         HdrLogProcessor(self.properties).process(dir)        
         print("============== Getting results: done ==============================")
                  

@@ -47,5 +47,5 @@ insert:
 #
 queries:
    singleclothes:
-      cql: select * from clothes where size = ? LIMIT 1 
+      cql: select * from clothes where title = ?
       fields: samerow
