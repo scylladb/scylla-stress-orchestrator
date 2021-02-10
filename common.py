@@ -77,8 +77,7 @@ def run_parallel(t, args_list):
         threads.append(thread)    
     for thread in threads:
         thread.join()
-    
-    
+        
 class CassandraStress:
     ssh_options="-i key -o StrictHostKeyChecking=no"
     
@@ -119,8 +118,7 @@ class CassandraStress:
         dest_dir=os.path.join(dir, ip)
         os.makedirs(dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:*.html {dest_dir}')
-        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:*.hdr {dest_dir}')
+        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:*.{html,hdr} {dest_dir}')    
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
     
     def get_results(self, dir):
@@ -131,8 +129,7 @@ class CassandraStress:
                  
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
-        self.ssh(ip, f'rm -fr *.html')
-        self.ssh(ip, f'rm -fr *.hdr')
+        self.ssh(ip, f'rm -fr *.html *.hdr')
         # we need to make sure that the no old load generator is still running.
         self.ssh(ip, f'killall -q -9 java')    
         print(f'    [{ip}] Preparing: done')
