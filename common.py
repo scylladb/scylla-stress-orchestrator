@@ -112,8 +112,108 @@ def run_parallel(t, args_list):
         threads.append(thread)    
     for thread in threads:
         thread.join()
+
+class Ssh:
+    log_ssh = False
+    # todo: move to properties
+    ssh_options="-i key -o StrictHostKeyChecking=no"
+    
+    def __init__(self, ip, user):
+        self.ip = ip
+        self.user = user
         
+    def run(self, command):
+        if self.log_ssh:
+            print(command)
+        os.system(f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\'')
+
+    def update(self):
+        self.run(
+            f"""if hash apt-get 2>/dev/null; then
+                sudo apt-get -y -qq update
+            elif hash yum 2>/dev/null; then
+                sudo yum -y update
+            else
+                echo "Cannot update: no yum/apt"
+                return 1
+        fi""")
+
+    def install(self, package):
+        self.run(
+            f"""if hash apt-get 2>/dev/null; then
+                sudo apt-get install -y -qq {package}
+            elif hash yum 2>/dev/null; then
+                sudo yum -y install {package}
+            else
+                echo "Cannot install {package}: no yum/apt"
+                return 1
+        fi""")
+     
+class DiskExplorer:    
+    log_ssh = False
+    
+    # todo: move to properties
+    ssh_options="-i key -o StrictHostKeyChecking=no"
+    
+    def __init__(self, ips, user):        
+        self.ips = ips
+        self.user = user
+       
+    def __install(self, ip):
+        print(f'    [{ip}] Instaling disk-explorer: started')
+        ssh = Ssh(ip, self.user)
+        ssh.update()
+        ssh.install('git')
+        ssh.install('fio')
+        ssh.install('python3')
+        ssh.install('python3-matplotlib')        
+        ssh.run(f'rm -fr diskplorer')
+        ssh.run(f'git clone https://github.com/scylladb/diskplorer.git')
+        print(f'    [{ip}] Instaling disk-explorer: done')   
+
+    def __ssh(self, ip, command):
+        ssh = Ssh(ip, self.user)
+        ssh.run(command)
+        
+    def install(self):
+        print("============== Disk Explorer Installation: started =================")
+        run_parallel(self.__install, [(ip,) for ip in self.ips])
+        print("============== Disk Explorer Installation: done =================")
+
+    def __run(self, ip, cmd):
+        print(f'    [{ip}] Run: started')
+        ssh = Ssh(ip, self.user)
+        ssh.run('rm -fr diskplorer/*.svg')
+        ssh.run(f'cd diskplorer && python3 diskplorer.py {cmd}')
+        # the file is 100 GB; so we want to remove it.
+        ssh.run(f'rm -fr diskplorer/fiotest.tmp')
+        print(f'    [{ip}] Run: done')
+
+    def run(self, command):
+        print("============== Disk Explorer run: started ===========================")
+        print(f"diskplorer.py {command}")
+        run_parallel(self.__run, [(ip, command) for ip in self.ips])    
+        print("============== Disk Explorer run: done ===========================")
+
+    def __download(self, ip, dir):
+        dest_dir=os.path.join(dir, ip)
+        os.makedirs(dest_dir)
+        
+        print(f'    [{ip}] Downloading to [{dest_dir}]')
+        
+        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:diskplorer/*.{{svg,csv}} {dest_dir}') 
+        
+        print(f'    [{ip}] Downloading to [{dest_dir}] done')
+    
+    def download(self, dir):
+        print("============== Disk Explorer Download: started ===========================")
+        run_parallel(self.__download, [(ip, dir) for ip in self.ips])    
+        print("============== Disk Explorer Download: done ===========================")
+
+
 class CassandraStress:
+    
+    # todo: move to properties
     ssh_options="-i key -o StrictHostKeyChecking=no"
     log_ssh = False
     

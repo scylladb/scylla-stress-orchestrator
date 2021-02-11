@@ -1,11 +1,11 @@
  
 
 variable "cluster_size" {
-    default = "2"
+    default = "1"
 }
 
 variable "loadgenerator_size" {
-    default = "2"
+    default = "1"
 }
 
 variable "cluster_instance_type" {
