@@ -6,7 +6,7 @@ provider "aws" {
 
 resource "aws_key_pair" "keypair" {
     key_name   = var.keypair_name
-    public_key = file("../key.pub")
+    public_key = file(var.public_key_location)
 }
 
 # ==========cluster ==========================
@@ -120,7 +120,7 @@ resource "aws_instance" "cluster" {
     connection {
         type        = "ssh"
         user        = var.cluster_user
-        private_key = file("../key")
+        private_key = file(var.private_key_location)
         host        = self.public_ip
     }
   
@@ -141,8 +141,8 @@ resource "null_resource" "cluster" {
     connection {
         type        = "ssh"
         host        = element(aws_instance.cluster.*.public_ip, count.index)
-        user        = "centos"
-        private_key = file("../key")
+        user        = var.cluster_user
+        private_key = file(var.private_key_location)
         timeout     = "8m"
     }
 
@@ -224,7 +224,7 @@ resource "aws_instance" "prometheus" {
     count           = 1
 
     tags = {
-        Name = "prometheus peter.v",
+        Name = "prometheus ${var.owner}",
         Owner = var.owner
     }
 
@@ -235,7 +235,7 @@ resource "aws_instance" "prometheus" {
     connection {
         type        = "ssh"
         user        = "ubuntu"
-        private_key = file("../key")
+        private_key = file(var.private_key_location)
         host        = self.public_ip
     }
     
@@ -267,7 +267,7 @@ resource "null_resource" "configure-prometheus" {
         type        = "ssh"
         host        = element(aws_instance.prometheus.*.public_ip, 0)
         user        = "ubuntu"
-        private_key = file("../key")
+        private_key = file(var.private_key_location)
         timeout     = "5m"
     }
     
@@ -332,7 +332,7 @@ resource "aws_instance" "loadgenerator" {
     count             = var.loadgenerator_size
 
     tags = {
-        Name = "load generator peter.v",
+        Name = "load generator ${var.owner}",
         Owner = var.owner
     }
 

@@ -6,7 +6,7 @@ provider "aws" {
 
 resource "aws_key_pair" "keypair" {
     key_name   = var.keypair_name
-    public_key = file("../key.pub")
+    public_key = file(var.public_key_location)
 }
 
 # ==========cluster ==========================
@@ -55,12 +55,12 @@ resource "aws_instance" "cluster" {
     connection {
         type        = "ssh"
         user        = var.cluster_user
-        private_key = file("../key")
+        private_key = file(var.private_key_location)
         host        = self.public_ip
         timeout     = "8m"
     }
   
-    # root disk
+    #root disk
     root_block_device {
         volume_size           = "20"
         volume_type           = "gp2"
@@ -69,7 +69,7 @@ resource "aws_instance" "cluster" {
     }
   
     ebs_block_device {
-        device_name = "/dev/sdd"
+        device_name = "/dev/sdx"
         volume_size = "10"
         volume_type = "standard"
         delete_on_termination = true
@@ -77,11 +77,11 @@ resource "aws_instance" "cluster" {
     
     provisioner "remote-exec" {
         inline = [
-            "sudo mkfs -t xfs /dev/sdd",
-            "sudo mkdir /data",
-            "sudo mount /dev/sdx /data",
-            "sudo chown -R ec2-user /data",
-            "sudo chmod -R g+rw /data"
+            "sudo mkfs -t xfs /dev/sdd"
+    #        "sudo mkdir /data",
+    #        "sudo mount /dev/sdx /data",
+    #        "sudo chown -R ec2-user /data",
+    #        "sudo chmod -R g+rw /data"
         ]
     }
 }

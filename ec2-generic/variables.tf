@@ -10,6 +10,14 @@ variable "keypair_name" {
     default = "pveentjer"
 }
 
+variable "public_key_location" {
+    default = "../key.pub"
+}
+
+variable "private_key_location" {
+    default = "../key.pem"
+}
+
 # ============ cluster ===============
 
 variable "cluster_size" {
@@ -21,7 +29,7 @@ variable "cluster_instance_type" {
 }
 
 variable "cluster_name" {
-    default = "cluster peter.v"
+    default = "cluster pveentjer"
 }
 
 variable "cluster_user" {

@@ -11,7 +11,7 @@ with open('properties.yml') as f:
 
 terraform_plan = properties.get('terraform_plan')
 
-print(f'Using terraform_plan {terraform_plan}')
+print(f'Using terraform_plan [{terraform_plan}]')
 os.system(f'terraform -chdir={terraform_plan} init') 
 os.system(f'terraform -chdir={terraform_plan} apply -auto-approve')
 

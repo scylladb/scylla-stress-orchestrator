@@ -115,17 +115,29 @@ def run_parallel(t, args_list):
 
 class Ssh:
     log_ssh = False
-    # todo: move to properties
-    ssh_options="-i key -o StrictHostKeyChecking=no"
     
-    def __init__(self, ip, user):
+    def __init__(self, ip, user, ssh_options):
         self.ip = ip
         self.user = user
+        self.ssh_options = ssh_options
         
+    def scp_from_remote(self, src, dst):    
+        cmd = f'scp {self.ssh_options} -q {self.user}@{self.ip}:{src} {dst}'
+        if(self.log_ssh):
+            print(cmd)
+        os.system(cmd) 
+    
+    def scp_to_remove(self, src, dst):    
+        cmd = f'scp {self.ssh_options} -q {src} {self.user}@{self.ip}:{dst}'
+        if(self.log_ssh):
+            print(cmd)
+        os.system(cmd) 
+    
     def run(self, command):
+        cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         if self.log_ssh:
-            print(command)
-        os.system(f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\'')
+            print(cmd)
+        os.system(cmd)
 
     def update(self):
         self.run(
@@ -155,18 +167,15 @@ class Ssh:
             fi""")
      
 class DiskExplorer:    
-    log_ssh = False
     
-    # todo: move to properties
-    ssh_options="-i key -o StrictHostKeyChecking=no"
-    
-    def __init__(self, ips, user):        
+    def __init__(self, ips, ssh_user, ssh_options):        
         self.ips = ips
-        self.user = user
+        self.ssh_user = ssh_user
+        self.ssh_options = ssh_options
        
     def __install(self, ip):
         print(f'    [{ip}] Instaling disk-explorer: started')
-        ssh = Ssh(ip, self.user)
+        ssh = new_ssh(ip)
         ssh.update()
         ssh.install('git')
         ssh.install('fio')
@@ -176,9 +185,8 @@ class DiskExplorer:
         ssh.run(f'git clone https://github.com/scylladb/diskplorer.git')
         print(f'    [{ip}] Instaling disk-explorer: done')   
 
-    def __ssh(self, ip, command):
-        ssh = Ssh(ip, self.user)
-        ssh.run(command)
+    def new_ssh(self, ip):
+        return Ssh(ip, self.ssh_user, self.ssh_options)
         
     def install(self):
         print("============== Disk Explorer Installation: started =================")
@@ -187,7 +195,7 @@ class DiskExplorer:
 
     def __run(self, ip, cmd):
         print(f'    [{ip}] Run: started')
-        ssh = Ssh(ip, self.user)
+        ssh = self.new_ssh(ip)
         ssh.run('rm -fr diskplorer/*.svg')
         ssh.run(f'cd diskplorer && python3 diskplorer.py {cmd}')
         # the file is 100 GB; so we want to remove it.
@@ -205,9 +213,7 @@ class DiskExplorer:
         os.makedirs(dest_dir)
         
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        
-        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:diskplorer/*.{{svg,csv}} {dest_dir}') 
-        
+        self.new_ssh(ip).scp_from_remote(f'diskplorer/*.{{svg,csv}}', dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
     
     def download(self, dir):
@@ -218,20 +224,18 @@ class DiskExplorer:
 
 class CassandraStress:
     
-    # todo: move to properties
-    ssh_options="-i key -o StrictHostKeyChecking=no"
-    log_ssh = False
-    
     def __init__(self, ips, properties):        
         self.properties = properties
         self.ips = ips
         self.cassandra_version = properties['cassandra_version']
-        self.ssh_options = properties['ssh_options']
-        self.user = properties['load_generator_user']
-        
+        self.ssh_user = properties['load_generator_user']
+       
+    def new_ssh(self, ip):
+        return Ssh(ip, self.ssh_user, self.properties['ssh_options'])
+                
     def __install(self, ip):
         print(f'    [{ip}] Instaling cassandra-stress: started')
-        ssh = Ssh(ip, self.user)
+        ssh = self.new_ssh(ip)
         ssh.update()
         ssh.install_one(['java-1.8.0-openjdk','openjdk-8-jdk'])                    
         ssh.install('wget')
@@ -248,7 +252,7 @@ class CassandraStress:
         print(cmd)
         cassandra_stress_dir=f'apache-cassandra-{self.cassandra_version}/tools/bin'
         full_cmd=f'{cassandra_stress_dir}/cassandra-stress {cmd}'
-        self.__ssh(ip, full_cmd)
+        self.new_ssh(ip).run(full_cmd)
 
     def stress(self, command):
         print("============== Cassandra-Stress: started ===========================")
@@ -256,11 +260,9 @@ class CassandraStress:
         print("============== Cassandra-Stress: done ==============================")
 
     def __ssh(self, ip, command):
-        ssh = Ssh(ip, self.user)
-        ssh.run(command)
+        self.new_ssh(ip).run(command)
         
     def ssh(self, command):
-        #print(full_cmd)
         run_parallel(self.__ssh, [(ip, command) for ip in self.ips])    
         
     def __upload(self, ip, file):
@@ -275,7 +277,7 @@ class CassandraStress:
         dest_dir=os.path.join(dir, ip)
         os.makedirs(dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        os.system(f'scp {self.ssh_options} -q {self.user}@{ip}:*.{{html,hdr}} {dest_dir}')    
+        self.new_ssh(ip).scp_from_remote(f'*.{{html,hdr}}', dest_dir)  
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
     
     def get_results(self, dir):
@@ -287,7 +289,7 @@ class CassandraStress:
                  
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
-        ssh = Ssh(ip, self.user)
+        ssh = self.new_ssh(ip)
         ssh.run(f'rm -fr *.html *.hdr')
         # we need to make sure that the no old load generator is still running.
         ssh.run(f'killall -q -9 java')    

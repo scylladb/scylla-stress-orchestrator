@@ -10,7 +10,7 @@ environment = common.load_yaml('environment.yml')
 
 iteration = Iteration("foobar")
 
-diskExplorer = DiskExplorer(environment['cluster_public_ips'], properties['load_generator_user'])
+diskExplorer = DiskExplorer(environment['cluster_public_ips'], properties['load_generator_user'], properties['ssh_options')
 diskExplorer.install()
 diskExplorer.run("-o diskplorer -d /data")
 diskExplorer.download(iteration.dir)
