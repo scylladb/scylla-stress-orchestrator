@@ -138,6 +138,10 @@ class Ssh:
                 return 1
             fi""")
 
+    def install_one(self, packages):
+        for package in packages:
+            self.install(package)
+     
     def install(self, package):
         print(f'    [{self.ip}] Install: {package}')
         self.run(
@@ -227,9 +231,12 @@ class CassandraStress:
         
     def __install(self, ip):
         print(f'    [{ip}] Instaling cassandra-stress: started')
-        self.__ssh(ip, f'sudo yum -y -q install java-1.8.0-openjdk')
-        self.__ssh(ip, f'wget -q -N https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz')
-        self.__ssh(ip, f'tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz')
+        ssh = Ssh(ip, self.user)
+        ssh.update()
+        ssh.install_one(['java-1.8.0-openjdk','openjdk-8-jdk'])                    
+        ssh.install('wget')
+        ssh.run(f'wget -q -N https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz')
+        ssh.run(f'tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz')
         print(f'    [{ip}] Instaling cassandra-stress: done')   
 
     def install(self):
@@ -249,10 +256,9 @@ class CassandraStress:
         print("============== Cassandra-Stress: done ==============================")
 
     def __ssh(self, ip, command):
-        if self.log_ssh:
-            print(command)
-        os.system(f'ssh {self.ssh_options} {self.user}@{ip} \'{command}\'')
-    
+        ssh = Ssh(ip, self.user)
+        ssh.run(command)
+        
     def ssh(self, command):
         #print(full_cmd)
         run_parallel(self.__ssh, [(ip, command) for ip in self.ips])    
@@ -281,9 +287,10 @@ class CassandraStress:
                  
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
-        self.__ssh(ip, f'rm -fr *.html *.hdr')
+        ssh = Ssh(ip, self.user)
+        ssh.run(f'rm -fr *.html *.hdr')
         # we need to make sure that the no old load generator is still running.
-        self.__ssh(ip, f'killall -q -9 java')    
+        ssh.run(f'killall -q -9 java')    
         print(f'    [{ip}] Preparing: done')
 
     def prepare(self):

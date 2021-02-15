@@ -24,11 +24,11 @@ variable "availability_zone" {
 }
 
 variable "cluster_ami" {
-    default = "ami-000f295fe8c032706"
+    default = "ami-0996d3051b72b5b2c"
 }
 
 variable "cluster_user" {
-    default = "fedora"
+    default = "ubuntu"
 }
 
 variable "owner" {

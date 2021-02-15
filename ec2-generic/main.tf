@@ -119,7 +119,7 @@ resource "aws_instance" "cluster" {
 
     connection {
         type        = "ssh"
-        user        = "centos"
+        user        = var.cluster_user
         private_key = file("../key")
         host        = self.public_ip
     }
@@ -339,13 +339,6 @@ resource "aws_instance" "loadgenerator" {
     vpc_security_group_ids = [
         aws_security_group.loadgenerator-sg.id
     ]
-
-    connection {
-        type        = "ssh"
-        user        = var.cluster_user
-        private_key = file("../key")
-        host        = self.public_ip
-    }
 }
 
 output "loadgenerator_public_ips" {

@@ -1,16 +1,18 @@
+variable "owner" {
+    default = "peter.veentjer@scylladb.com"
+}
+
 variable "region" {
     default = "us-east-2"
 }
  
-variable "cluster_size" {
-    default = "1"
-}
-
 variable "keypair_name" {
     default = "pveentjer"
 }
 
-variable "loadgenerator_size" {
+# ============ cluster ===============
+
+variable "cluster_size" {
     default = "1"
 }
 
@@ -22,20 +24,19 @@ variable "cluster_name" {
     default = "cluster peter.v"
 }
 
-variable "prometheus_instance_type" {
-    default = "c5.xlarge"
-}
-
-variable "loadgenerator_instance_type" {
-    default = "c5.4xlarge"
+variable "cluster_user" {
+    default = "centos"
 }
 
 variable "scylla_ami" {
     default = "ami-02720bcdd160a5d8c"
 }
 
-variable "loadgenerator_ami" {
-    default = "ami-0a0ad6b70e61be944"
+
+# ============ prometheus instance ===============
+
+variable "prometheus_instance_type" {
+    default = "c5.xlarge"
 }
 
 variable "prometheus_ami" {
@@ -43,10 +44,21 @@ variable "prometheus_ami" {
     default = "ami-0dd9f0e7df0f0a138"
 }
 
-variable "cluster_user" {
-    default = "centos"
+# ============ prometheus instance ===============
+
+variable "loadgenerator_instance_type" {
+    default = "c5.4xlarge"
 }
 
-variable "owner" {
-    default = "peter.veentjer@scylladb.com"
+variable "loadgenerator_size" {
+    default = "1"
 }
+
+variable "loadgenerator_ami" {
+    default = "ami-0996d3051b72b5b2c"
+}
+
+variable "loadgenerator_user" {
+    default = "ubuntu"
+}
+
