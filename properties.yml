@@ -1,6 +1,6 @@
 ---
 cassandra_version: 3.11.10
-load_generator_user: ubuntu
+load_generator_user: ec2-user
 terraform_plan: ec2-disk
 ssh_options: -i key -o StrictHostKeyChecking=no
 jvm_path: /eng/jdk/jdk1.8.0_251/

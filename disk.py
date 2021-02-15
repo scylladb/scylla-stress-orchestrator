@@ -12,5 +12,5 @@ iteration = Iteration("foobar")
 
 diskExplorer = DiskExplorer(environment['cluster_public_ips'], properties['load_generator_user'])
 diskExplorer.install()
-diskExplorer.run("-o diskplorer")
+diskExplorer.run("-o diskplorer -d /data")
 diskExplorer.download(iteration.dir)

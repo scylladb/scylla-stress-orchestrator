@@ -132,22 +132,23 @@ class Ssh:
             f"""if hash apt-get 2>/dev/null; then
                 sudo apt-get -y -qq update
             elif hash yum 2>/dev/null; then
-                sudo yum -y update
+                sudo yum -y -q update
             else
                 echo "Cannot update: no yum/apt"
                 return 1
-        fi""")
+            fi""")
 
     def install(self, package):
+        print(f'    [{self.ip}] Install: {package}')
         self.run(
             f"""if hash apt-get 2>/dev/null; then
                 sudo apt-get install -y -qq {package}
             elif hash yum 2>/dev/null; then
-                sudo yum -y install {package}
+                sudo yum -y -q install {package}
             else
                 echo "Cannot install {package}: no yum/apt"
                 return 1
-        fi""")
+            fi""")
      
 class DiskExplorer:    
     log_ssh = False

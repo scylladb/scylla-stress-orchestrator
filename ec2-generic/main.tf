@@ -1,11 +1,11 @@
 
 provider "aws" {
     profile = "default"
-    region = "us-east-2"
+    region = var.region
 }
 
 resource "aws_key_pair" "keypair" {
-    key_name   = "scylla.kp"
+    key_name   = var.keypair_name
     public_key = file("../key.pub")
 }
 
@@ -98,7 +98,7 @@ resource "aws_security_group" "cluster-sg" {
 
     tags = {
         Name = "terraform",
-        Owner = "peter.veentjer@scylladb.com"
+        Owner = var.owner
     }
 }
 
@@ -109,8 +109,8 @@ resource "aws_instance" "cluster" {
     count           = var.cluster_size
 
     tags = {
-        Name = "cluster peter.v",
-        Owner = "peter.veentjer@scylladb.com"
+        Name  = var.cluster_name
+        Owner = var.owner
     }
 
     vpc_security_group_ids = [
@@ -213,7 +213,7 @@ resource "aws_security_group" "prometheus-sg" {
 
     tags = {
         Name = "terraform",
-        Owner = "peter.veentjer@scylladb.com"
+        Owner = var.owner
     }
 }
 
@@ -225,7 +225,7 @@ resource "aws_instance" "prometheus" {
 
     tags = {
         Name = "prometheus peter.v",
-        Owner = "peter.veentjer@scylladb.com"
+        Owner = var.owner
     }
 
     vpc_security_group_ids = [
@@ -321,7 +321,7 @@ resource "aws_security_group" "loadgenerator-sg" {
 
     tags = {
         Name = "terraform",
-        Owner = "peter.veentjer@scylladb.com"
+        Owner = var.owner
     }
 }
 
@@ -331,10 +331,9 @@ resource "aws_instance" "loadgenerator" {
     instance_type     = var.loadgenerator_instance_type
     count             = var.loadgenerator_size
 
-
     tags = {
         Name = "load generator peter.v",
-        Owner = "peter.veentjer@scylladb.com"
+        Owner = var.owner
     }
 
     vpc_security_group_ids = [
@@ -343,7 +342,7 @@ resource "aws_instance" "loadgenerator" {
 
     connection {
         type        = "ssh"
-        user        = "ec2-user"
+        user        = var.cluster_user
         private_key = file("../key")
         host        = self.public_ip
     }
