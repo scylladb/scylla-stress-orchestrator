@@ -42,7 +42,7 @@ resource "aws_instance" "cluster" {
     instance_type     = var.cluster_instance_type
     count             = var.cluster_size
     availability_zone = var.availability_zone
-
+    
     tags = {
         Name  = var.cluster_name
         Owner = var.owner
@@ -52,38 +52,42 @@ resource "aws_instance" "cluster" {
         aws_security_group.cluster-sg.id
     ]
 
-    connection {
-        type        = "ssh"
-        user        = var.cluster_user
-        private_key = file(var.private_key_location)
-        host        = self.public_ip
-        timeout     = "8m"
-    }
+    #root_block_device {
+    #    volume_size             = "10"
+    #    volume_type             = "gp2"
+    #    encrypted               = false
+    #    delete_on_termination   = true
+    #}
   
-    #root disk
-    root_block_device {
-        volume_size           = "20"
-        volume_type           = "gp2"
-        encrypted             = true
-        delete_on_termination = true
-    }
-  
+    # read following if devices don't show up
+    # https://stackoverflow.com/questions/22816878/my-mounted-ebs-volume-is-not-showing-up
     ebs_block_device {
-        device_name = "/dev/sdx"
-        volume_size = "10"
-        volume_type = "standard"
-        delete_on_termination = true
+        device_name             = "/dev/xvdb"
+        volume_size             = "3000"
+        #iops                    = "3200"
+        volume_type             = "gp3"
+        delete_on_termination   = true
     }
     
-    provisioner "remote-exec" {
-        inline = [
-            "sudo mkfs -t xfs /dev/sdd"
-    #        "sudo mkdir /data",
-    #        "sudo mount /dev/sdx /data",
-    #        "sudo chown -R ec2-user /data",
-    #        "sudo chmod -R g+rw /data"
-        ]
-    }
+    #connection {
+    #    type        = "ssh"
+    #    user        = var.cluster_user
+    #    private_key = file(var.private_key_location)
+    #    host        = self.public_ip
+    #    agent       = false
+    #    timeout     = "60m"
+    #}
+   
+    #provisioner "remote-exec" {
+    #       inline = [
+    #        "ls"
+    #        #"sudo mkfs -t xfs /dev/nvme1n1",
+    #        #"sudo mkdir /data",
+    #        #"sudo mount /dev/nvme1n1 /data",
+    #        #"sudo chown -R ec2-user /data",
+    #        #"sudo chmod -R g+rw /data"
+    #    ]
+    #}
 }
 
 output "cluster_public_ips" {

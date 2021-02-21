@@ -10,3 +10,5 @@ trials/
 *.kate-swp
 environment.yml
 __pycache__/
+venv/
+.idea/

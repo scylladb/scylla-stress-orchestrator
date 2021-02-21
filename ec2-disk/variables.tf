@@ -12,7 +12,7 @@ variable "owner" {
 }
 
 variable "keypair_name" {
-    default = "banana"
+    default = "blibli"
 }
 
 variable "public_key_location" {
@@ -20,7 +20,7 @@ variable "public_key_location" {
 }
 
 variable "private_key_location" {
-    default = "../key.pem"
+    default = "../key"
 }
 
 variable "cluster_size" {
@@ -28,15 +28,15 @@ variable "cluster_size" {
 }
 
 variable "cluster_instance_type" {
-    default = "r5d.xlarge"
+    default = "r5b.2xlarge"
 }
 
 variable "cluster_ami" {
-    default = "ami-000f295fe8c032706"
+    default = "ami-001aa9e3581d595dc"
 }
 
 variable "cluster_user" {
-    default = "core"
+    default = "fedora"
 }
 
 variable "cluster_name" {

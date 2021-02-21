@@ -15,7 +15,7 @@ variable "public_key_location" {
 }
 
 variable "private_key_location" {
-    default = "../key.pem"
+    default = "../key"
 }
 
 # ============ cluster ===============

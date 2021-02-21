@@ -121,7 +121,7 @@ resource "aws_instance" "cluster" {
         type        = "ssh"
         user        = var.cluster_user
         private_key = file(var.private_key_location)
-        host        = self.public_ip
+        host        = self.public_ip        
     }
   
     ebs_block_device {
