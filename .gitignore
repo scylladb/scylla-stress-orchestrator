@@ -2,6 +2,7 @@
 */terraform.tfstate.backup
 key.pub
 key.pem
+key
 */.terraform
 */.terraform.lock.hcl
 */.terraform.tfstate.lock.info
