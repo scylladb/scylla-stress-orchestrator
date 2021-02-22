@@ -259,7 +259,7 @@ class Fio:
 
     def run(self, options):
         print("============== fio run: started ===========================")
-        print(f"fio {options}")
+        print(f"sudo fio {options}")
         run_parallel(self.__run, [(ip, options) for ip in self.ips])
         print("============== fio run: done ===========================")
 

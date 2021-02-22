@@ -5,6 +5,7 @@ from common import CassandraStress
 from common import Iteration
 from common import DiskExplorer
 from common import Ssh
+from common import Fio
 
 properties          = common.load_yaml('properties.yml')
 ssh_options         =  properties['ssh_options']
@@ -32,5 +33,5 @@ make_data_dir(public_ips[0], dev, dir)
 
 fio = Fio(public_ips, user, ssh_options)
 fio.install()
-fio.run(f"-o diskplorer -d {dir}")
+fio.run(f"--filename={dev} --direct=1 --rw=randread --bs=4k --ioengine=libaio --iodepth=256 --runtime=120 --numjobs=4 --time_based --group_reporting --name=iops-test-job --eta-newline=1 --readonly")
 fio.download(iteration.dir)
