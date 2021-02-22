@@ -131,7 +131,7 @@ class Ssh:
             print(cmd)
         os.system(cmd)
 
-    def scp_to_remove(self, src, dst):
+    def scp_to_remote(self, src, dst):
         cmd = f'scp {self.ssh_options} -q {src} {self.user}@{self.ip}:{dst}'
         if self.log_ssh:
             print(cmd)
@@ -235,9 +235,18 @@ class Fio:
         self.ips = ips
         self.ssh_user = ssh_user
         self.ssh_options = ssh_options
-
+        self.dir_name = "fio-"+datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+     
     def new_ssh(self, ip):
         return Ssh(ip, self.ssh_user, self.ssh_options)
+
+    def __upload(self, ip, file):
+        self.new_ssh(ip).scp_to_remote(file, self.dir_name)
+
+    def upload(self, file):
+        print("============== Upload: started ===========================")
+        run_parallel(self.__upload, [(ip, file) for ip in self.ips])
+        print("============== Upload-Stress: done ==============================")
 
     def __install(self, ip):
         print(f'    [{ip}] Instaling fio: started')
@@ -253,8 +262,9 @@ class Fio:
 
     def __run(self, ip, options):
         print(f'    [{ip}] fio: started')
-        ssh = self.new_ssh(ip)
-        ssh.run(f'fio {options}')
+        ssh = self.new_ssh(ip)        
+        ssh.run(f'mkdir -p {self.dir_name}')
+        ssh.run(f'cd {self.dir_name} && sudo fio {options}')        
         print(f'    [{ip}] fio: done')
 
     def run(self, options):
@@ -268,7 +278,7 @@ class Fio:
         os.makedirs(dest_dir)
 
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        self.new_ssh(ip).scp_from_remote(f'diskplorer/*.{{svg,csv}}', dest_dir)
+        self.new_ssh(ip).scp_from_remote(f'{self.dir_name}/*', dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
     def download(self, dir):
@@ -322,7 +332,7 @@ class CassandraStress:
         run_parallel(self.__ssh, [(ip, command) for ip in self.ips])
 
     def __upload(self, ip, file):
-        self.new_ssh(ip).scp_to_remove(file, "")
+        self.new_ssh(ip).scp_to_remote(file, "")
 
     def upload(self, file):
         print("============== Upload: started ===========================")
