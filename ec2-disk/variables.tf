@@ -28,7 +28,8 @@ variable "cluster_size" {
 }
 
 variable "cluster_instance_type" {
-    default = "r5b.2xlarge"
+    default = "c5d.9xlarge"
+    #default = "i3.8xlarge"
 }
 
 variable "cluster_ami" {
@@ -43,3 +44,21 @@ variable "cluster_name" {
     default = "cluster pveentjer"
 }
 
+variable ebs_block_device-device_name {
+    default = "/dev/xvdb"    
+}
+
+variable ebs_block_device-volume_size {
+    default = "3000"    
+}
+
+variable ebs_block_device-iops {
+    default = null
+}
+
+variable ebs_block_device-volume_type {
+    default = "gp3"    
+}
+
+
+    

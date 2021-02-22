@@ -8,6 +8,7 @@ key.pem
 key
 benchmark.html
 trials/
+trials*/
 *.kate-swp
 environment.yml
 __pycache__/

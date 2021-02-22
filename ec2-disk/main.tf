@@ -62,13 +62,13 @@ resource "aws_instance" "cluster" {
     # read following if devices don't show up
     # https://stackoverflow.com/questions/22816878/my-mounted-ebs-volume-is-not-showing-up
     ebs_block_device {
-        device_name             = "/dev/xvdb"
-        volume_size             = "3000"
-        #iops                    = "3200"
-        volume_type             = "gp3"
+        device_name             = var.ebs_block_device-device_name
+        volume_size             = var.ebs_block_device-volume_size
+        iops                    = var.ebs_block_device-iops
+        volume_type             = var.ebs_block_device-volume_type
         delete_on_termination   = true
     }
-    
+
     #connection {
     #    type        = "ssh"
     #    user        = var.cluster_user
