@@ -229,6 +229,54 @@ class DiskExplorer:
         print("============== Disk Explorer Download: done ===========================")
 
 
+class Fio:
+
+    def __init__(self, ips, ssh_user, ssh_options):
+        self.ips = ips
+        self.ssh_user = ssh_user
+        self.ssh_options = ssh_options
+
+    def new_ssh(self, ip):
+        return Ssh(ip, self.ssh_user, self.ssh_options)
+
+    def __install(self, ip):
+        print(f'    [{ip}] Instaling fio: started')
+        ssh = self.new_ssh(ip)
+        ssh.update()
+        ssh.install('fio')
+        print(f'    [{ip}] Instaling fio: done')
+
+    def install(self):
+        print("============== fio Installation: started =================")
+        run_parallel(self.__install, [(ip,) for ip in self.ips])
+        print("============== fio Installation: done =================")
+
+    def __run(self, ip, options):
+        print(f'    [{ip}] fio: started')
+        ssh = self.new_ssh(ip)
+        ssh.run(f'fio {options}')
+        print(f'    [{ip}] fio: done')
+
+    def run(self, options):
+        print("============== fio run: started ===========================")
+        print(f"fio {options}")
+        run_parallel(self.__run, [(ip, options) for ip in self.ips])
+        print("============== fio run: done ===========================")
+
+    def __download(self, ip, dir):
+        dest_dir = os.path.join(dir, ip)
+        os.makedirs(dest_dir)
+
+        print(f'    [{ip}] Downloading to [{dest_dir}]')
+        self.new_ssh(ip).scp_from_remote(f'diskplorer/*.{{svg,csv}}', dest_dir)
+        print(f'    [{ip}] Downloading to [{dest_dir}] done')
+
+    def download(self, dir):
+        print("============== FIO Download: started ===========================")
+        run_parallel(self.__download, [(ip, dir) for ip in self.ips])
+        print("============== FIO Download: done ===========================")
+
+
 class CassandraStress:
 
     def __init__(self, ips, properties):
