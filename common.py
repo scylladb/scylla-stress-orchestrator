@@ -200,8 +200,6 @@ class DiskExplorer:
         print("============== Disk Explorer Installation: done =================")
 
     def __run(self, ip, cmd):
-        now = 
-
         print(f'    [{ip}] Run: started')
         ssh = self.new_ssh(ip)
         ssh.run('rm -fr diskplorer/*.svg')
@@ -212,10 +210,10 @@ class DiskExplorer:
         print(f'    [{ip}] Run: done')
 
     def run(self, command):
-        print(f"============== Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]===========================")
+        print(f'============== Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]===========================')
         print(f"diskplorer.py {command}")
         run_parallel(self.__run, [(ip, command) for ip in self.ips])
-        print(f"============== Disk Explorer run: done [{datetime.now().strftime("%H:%M:%S")}] ===========================")
+        print(f'============== Disk Explorer run: done [{datetime.now().strftime("%H:%M:%S")}] ===========================')
 
     def __download(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
