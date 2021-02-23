@@ -2,7 +2,7 @@
 cassandra_version: 3.11.10
 load_generator_user: ubuntu
 terraform_plan: ec2-disk
-ssh_options: -i key -o StrictHostKeyChecking=no
+ssh_options: -i key -o StrictHostKeyChecking=no -o ConnectTimeout=60
 jvm_path: /eng/jdk/jdk1.8.0_251/
 #cluster_user: centos
 cluster_user: core

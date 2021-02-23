@@ -4,6 +4,7 @@ import os
 import yaml
 import glob
 import csv
+import time
 from datetime import datetime
 from threading import Thread
 
@@ -119,6 +120,7 @@ def run_parallel(t, args_list):
 
 class Ssh:
     log_ssh = False
+    max_attempts = 60
 
     def __init__(self, ip, user, ssh_options):
         self.ip = ip
@@ -127,22 +129,50 @@ class Ssh:
 
     def scp_from_remote(self, src, dst):
         cmd = f'scp {self.ssh_options} -q {self.user}@{self.ip}:{src} {dst}'
-        if self.log_ssh:
-            print(cmd)
-        os.system(cmd)
+        self.__scp(cmd)
 
     def scp_to_remote(self, src, dst):
         cmd = f'scp {self.ssh_options} -q {src} {self.user}@{self.ip}:{dst}'
-        if self.log_ssh:
-            print(cmd)
-        os.system(cmd)
-
+        self.__scp(cmd)
+                
+    def __scp(self, cmd):
+        # we need to retry under certain conditions
+        for attempt in range(1, self.max_attempts):
+            if self.log_ssh or attempt > 1:
+                print(f'[{attempt}] {cmd}')
+            exitcode = os.system(cmd)
+            if exitcode == 0:
+                return
+            elif exitcode in [4, 65]:            
+                # 4 is connection failed
+                # 65 is host not allowed to connect.
+                time.sleep(5)
+                continue
+            else:
+                raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
+            
+        raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
+                        
     def run(self, command):
         cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
-        if self.log_ssh:
-            print(cmd)
-        os.system(cmd)
-
+        
+        # we need to retry under certain conditions
+        for attempt in range(1, self.max_attempts):
+            if self.log_ssh or attempt > 1:
+                print(f'[{attempt}] {cmd}')
+            exitcode = os.system(cmd)
+            if exitcode == 0:
+                return
+            elif exitcode in [2, 65, 65280]:
+                # 2 is connection failed
+                # 65 is host not allowed to connect.
+                time.sleep(5)
+                continue
+            else:
+                raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
+            
+        raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
+            
     def update(self):
         self.run(
             f"""if hash apt-get 2>/dev/null; then
@@ -191,7 +221,7 @@ class DiskExplorer:
         ssh.install('python3')
         ssh.install('python3-matplotlib')
         ssh.run(f'rm -fr diskplorer')
-        ssh.run(f'git clone https://github.com/scylladb/diskplorer.git')
+        ssh.run(f'git clone -q https://github.com/scylladb/diskplorer.git')
         print(f'    [{ip}] Instaling disk-explorer: done')
 
     def install(self):

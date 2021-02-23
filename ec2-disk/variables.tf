@@ -28,8 +28,8 @@ variable "cluster_size" {
 }
 
 variable "cluster_instance_type" {
-    default = "c5d.9xlarge"
-    #default = "i3.8xlarge"
+    #default = "c5d.9xlarge"
+    default = "i3.8xlarge"
 }
 
 variable "cluster_ami" {

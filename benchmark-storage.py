@@ -10,7 +10,7 @@ from common import Fio
 
 
 properties          = common.load_yaml('properties.yml')
-ssh_options         =  properties['ssh_options']
+ssh_options         = properties['ssh_options']
 terraform_plan      = properties.get('terraform_plan')
 user                = "fedora"
 basename            = "storage/i3.8xlarge/"
@@ -45,19 +45,23 @@ def run_diskExplorer(name, dev):
 #terraform.destroy(terraform_plan)
 
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp2" ')
-#run_diskExplorer("ebs-gp2", "/dev/nvme1n1") 
+#run_diskExplorer("ebs-gp2", "/dev/xvdb") 
 #terraform.destroy(terraform_plan)
  
-terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp3" ')
-run_diskExplorer("ebs-gp3", "/dev/nvme1n1") 
+#terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp3" ')
+#run_diskExplorer("ebs-gp3", "/dev/xvdb") 
 #terraform.destroy(terraform_plan)
 
+terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp3" -var="ebs_block_device-iops=16000"')
+run_diskExplorer("ebs-gp3-iops", "/dev/xvdb") 
+terraform.destroy(terraform_plan)
+
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=io1" -var="ebs_block_device-iops=64000" ')
-#run_diskExplorer("ebs-io1", "/dev/nvme1n1") 
+#run_diskExplorer("ebs-io1", "/dev/xvdb") 
 #terraform.destroy(terraform_plan)
     
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=12000" -var="ebs_block_device-volume_type=io2" -var="ebs_block_device-iops=64000" ')
-#run_diskExplorer("ebs-io2", "/dev/nvme1n1") 
+#run_diskExplorer("ebs-io2", "/dev/xvdb") 
 #terraform.destroy(terraform_plan)
 
 

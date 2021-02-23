@@ -6,4 +6,4 @@ import terraform
 with open('properties.yml') as f:
     properties = yaml.load(f, Loader=yaml.FullLoader)
 
-terraform.destroy(properties.get('terraform_plan'), '-lock=false')
+terraform.destroy(properties.get('terraform_plan'))

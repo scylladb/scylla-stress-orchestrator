@@ -6,5 +6,5 @@ import terraform
 with open('properties.yml') as f:
     properties = yaml.load(f, Loader=yaml.FullLoader)
 
-terraform.apply(properties.get('terraform_plan'),"-lock=false")
+terraform.apply(properties.get('terraform_plan'))
                 
