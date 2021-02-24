@@ -40,9 +40,9 @@ def run_diskExplorer(name, dev):
     diskExplorer.download(iteration.dir)
 
 
-#terraform.apply(terraform_plan)
-#run_diskExplorer("instance-store/", "/dev/nvme2n1") 
-#terraform.destroy(terraform_plan)
+terraform.apply(terraform_plan)
+run_diskExplorer("instance-store/", "/dev/nvme1n1") 
+terraform.destroy(terraform_plan)
 
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp2" ')
 #run_diskExplorer("ebs-gp2", "/dev/xvdb") 
@@ -52,9 +52,9 @@ def run_diskExplorer(name, dev):
 #run_diskExplorer("ebs-gp3", "/dev/xvdb") 
 #terraform.destroy(terraform_plan)
 
-terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp3" -var="ebs_block_device-iops=16000"')
-run_diskExplorer("ebs-gp3-iops", "/dev/xvdb") 
-terraform.destroy(terraform_plan)
+#terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp3" -var="ebs_block_device-iops=16000"')
+#run_diskExplorer("ebs-gp3-iops", "/dev/xvdb") 
+#terraform.destroy(terraform_plan)
 
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=io1" -var="ebs_block_device-iops=64000" ')
 #run_diskExplorer("ebs-io1", "/dev/xvdb") 
