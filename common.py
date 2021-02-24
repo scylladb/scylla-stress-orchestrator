@@ -1,6 +1,7 @@
 # !/bin/python3
 
 import os
+import subprocess
 import yaml
 import glob
 import csv
@@ -140,7 +141,7 @@ class Ssh:
         for attempt in range(1, self.max_attempts):
             if self.log_ssh or attempt > 1:
                 print(f'[{attempt}] {cmd}')
-            exitcode = os.system(cmd)
+            exitcode = subprocess.call(cmd, shell=True)
             if exitcode == 0:
                 return
             elif exitcode in [4, 65]:            
@@ -160,10 +161,10 @@ class Ssh:
         for attempt in range(1, self.max_attempts):
             if self.log_ssh or attempt > 1:
                 print(f'[{attempt}] {cmd}')
-            exitcode = os.system(cmd)
+            exitcode = subprocess.call(cmd, shell=True)
             if exitcode == 0:
                 return
-            elif exitcode in [2, 65, 65280]:
+            elif exitcode in [2, 65]:
                 # 2 is connection failed
                 # 65 is host not allowed to connect.
                 time.sleep(5)

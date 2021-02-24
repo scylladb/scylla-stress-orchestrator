@@ -30,14 +30,20 @@ variable "cluster_size" {
 variable "cluster_instance_type" {
     #default = "c5d.9xlarge"
     default = "i3.8xlarge"
+    #default = "r5b.4xlarge"
 }
 
 variable "cluster_ami" {
-    default = "ami-001aa9e3581d595dc"
+    # fedora 33
+    default = "ami-0054436646144eb33"
+    
+    # ubuntu
+    #default = "ami-0996d3051b72b5b2c"
 }
 
 variable "cluster_user" {
     default = "fedora"
+    #default = "ubuntu"
 }
 
 variable "cluster_name" {

@@ -51,13 +51,6 @@ resource "aws_instance" "cluster" {
     vpc_security_group_ids = [
         aws_security_group.cluster-sg.id
     ]
-
-    #root_block_device {
-    #    volume_size             = "10"
-    #    volume_type             = "gp2"
-    #    encrypted               = false
-    #    delete_on_termination   = true
-    #}
   
     # read following if devices don't show up
     # https://stackoverflow.com/questions/22816878/my-mounted-ebs-volume-is-not-showing-up

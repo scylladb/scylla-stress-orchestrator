@@ -18,6 +18,7 @@ basename            = "storage/i3.8xlarge/"
 def make_data_dir(ip, dev, dir):
     print("Creating and mounting file system: started")
     ssh = Ssh(ip, user, ssh_options)
+    ssh.run("lsblk")
     ssh.run(f"sudo mkfs -t xfs {dev}")
     ssh.run(f"sudo mkdir {dir}")
     ssh.run(f"sudo mount {dev} {dir}")
@@ -42,26 +43,26 @@ def run_diskExplorer(name, dev):
 
 terraform.apply(terraform_plan)
 run_diskExplorer("instance-store/", "/dev/nvme1n1") 
-terraform.destroy(terraform_plan)
+#terraform.destroy(terraform_plan)
 
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp2" ')
-#run_diskExplorer("ebs-gp2", "/dev/xvdb") 
+#run_diskExplorer("ebs-gp2", "/dev/nvme1n1") 
 #terraform.destroy(terraform_plan)
  
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp3" ')
-#run_diskExplorer("ebs-gp3", "/dev/xvdb") 
+#run_diskExplorer("ebs-gp3", "/dev/nvme1n1") 
 #terraform.destroy(terraform_plan)
 
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp3" -var="ebs_block_device-iops=16000"')
-#run_diskExplorer("ebs-gp3-iops", "/dev/xvdb") 
+#run_diskExplorer("ebs-gp3-iops", "/dev/nvme1n1") 
 #terraform.destroy(terraform_plan)
 
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=io1" -var="ebs_block_device-iops=64000" ')
-#run_diskExplorer("ebs-io1", "/dev/xvdb") 
+#run_diskExplorer("ebs-io1", "/dev/nvme1n1") 
 #terraform.destroy(terraform_plan)
     
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=12000" -var="ebs_block_device-volume_type=io2" -var="ebs_block_device-iops=64000" ')
-#run_diskExplorer("ebs-io2", "/dev/xvdb") 
+#run_diskExplorer("ebs-io2", "/dev/nvme1n1") 
 #terraform.destroy(terraform_plan)
 
 
