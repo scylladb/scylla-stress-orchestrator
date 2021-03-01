@@ -16,7 +16,8 @@ def load_yaml(path):
 
 
 class Iteration:
-    def __init__(self, trial_name):
+    
+    def __init__(self, trial_name, description=None):
         self.trials_dir_name = "trials"
         self.trials_dir = os.path.join(os.getcwd(), self.trials_dir_name)
         self.trial_name = trial_name
@@ -27,6 +28,11 @@ class Iteration:
 
         os.makedirs(self.dir)
 
+        if description:
+            desc_file = os.path.join(self.dir, "description.txt")
+            with open(desc_file, "w") as text_file:
+                print(description, file=text_file)
+
         latest_dir = os.path.join(self.trial_dir, "latest")
         if os.path.isdir(latest_dir):
             os.unlink(latest_dir)
@@ -35,6 +41,7 @@ class Iteration:
 
 
 class HdrLogMerging:
+    
     def __init__(self, properties):
         self.properties = properties
 
@@ -69,6 +76,7 @@ class HdrLogMerging:
 
 
 class HdrLogProcessor:
+    
     def __init__(self, properties):
         self.properties = properties
 
@@ -117,7 +125,7 @@ def run_parallel(t, args_list):
         threads.append(thread)
     for thread in threads:
         thread.join()
-
+   
 
 class Ssh:
     log_ssh = False
@@ -138,21 +146,21 @@ class Ssh:
                 
     def __scp(self, cmd):
         # we need to retry under certain conditions
-        for attempt in range(1, self.max_attempts):
-            if self.log_ssh or attempt > 1:
-                print(f'[{attempt}] {cmd}')
-            exitcode = subprocess.call(cmd, shell=True)
-            if exitcode == 0:
-                return
-            elif exitcode in [4, 65]:            
-                # 4 is connection failed
-                # 65 is host not allowed to connect.
-                time.sleep(5)
-                continue
-            else:
-                raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
-            
-        raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
+        #for attempt in range(1, self.max_attempts):
+        #    if self.log_ssh or attempt > 1:
+        #        print(f'[{attempt}] {cmd}')
+        exitcode = subprocess.call(cmd, shell=True)
+        #    if exitcode == 0:
+        #        return
+        #    elif exitcode in [4, 65, 255]:            
+        #        # 4 is connection failed
+        #        # 65 is host not allowed to connect.
+        #        time.sleep(5)
+        #        continue
+        #    else:
+        #        raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
+        #    
+        #raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
                         
     def run(self, command):
         cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
@@ -162,9 +170,9 @@ class Ssh:
             if self.log_ssh or attempt > 1:
                 print(f'[{attempt}] {cmd}')
             exitcode = subprocess.call(cmd, shell=True)
-            if exitcode == 0:
+            if exitcode == 0 or exitcode == 1: # todo: we need to deal better with exit code
                 return
-            elif exitcode in [2, 65]:
+            elif exitcode in [2, 65, 255]:
                 # 2 is connection failed
                 # 65 is host not allowed to connect.
                 time.sleep(5)
@@ -180,14 +188,16 @@ class Ssh:
                 sudo apt-get -y -qq update
             elif hash yum 2>/dev/null; then
                 sudo yum -y -q update
+            elif hash dnf 2>/dev/null; then
+                sudo dnf -y -q update
             else
-                echo "Cannot update: no yum/apt/dnf"
+                echo "Cannot update: yum/apt/dnf not found"
                 return 1
             fi""")
 
-    def install_one(self, packages):
+    def install_one(self, package_list):
         # could be done a lot better by asking if it exist and then installing it.
-        for package in packages:
+        for package in package_list:
             self.install(package)
 
     def install(self, package):
@@ -195,12 +205,30 @@ class Ssh:
         self.run(
             f"""if hash apt-get 2>/dev/null; then
                 sudo apt-get install -y -qq {package}
+            elif hash yum 2>/dev/null; then
+                sudo yum -y -q install {package}
             elif hash dnf 2>/dev/null; then
                 sudo dnf -y -q install {package}
             else
-                echo "Cannot install {package}: no yum/apt/dnf"
+                echo "Cannot install {package}: yum/apt/dnf not found"
                 return 1
             fi""")
+
+
+def __collect_ec2_metadata(ip, ssh_user, ssh_options, dir):
+    dest_dir = os.path.join(dir, ip)
+    os.makedirs(dest_dir, exist_ok=True)
+  
+    ssh = Ssh(ip, ssh_user, ssh_options)
+    ssh.update()
+    # https://stackoverflow.com/questions/35824356/how-collect-metadata-os-info-about-ec2-instance-to-file
+    ssh.install("curl")
+    ssh.run("curl http://169.254.169.254/latest/dynamic/instance-identity/document > metadata.txt")
+    ssh.scp_from_remote("metadata.txt", dest_dir)
+
+
+def collect_ec2_metadata(ips, ssh_user, ssh_options, dir):
+    run_parallel(__collect_ec2_metadata, [(ip, ssh_user, ssh_options, dir) for ip in ips])
 
 
 class DiskExplorer:
@@ -220,7 +248,9 @@ class DiskExplorer:
         ssh.install('git')
         ssh.install('fio')
         ssh.install('python3')
-        ssh.install('python3-matplotlib')
+        ssh.install('python3-pip')
+        #ssh.install_one(['python3-matplotlib','python-matplotlib'])
+        ssh.run("sudo pip3 install -qqq matplotlib")
         ssh.run(f'rm -fr diskplorer')
         ssh.run(f'git clone -q https://github.com/scylladb/diskplorer.git')
         print(f'    [{ip}] Instaling disk-explorer: done')
@@ -242,13 +272,13 @@ class DiskExplorer:
 
     def run(self, command):
         print(f'============== Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]===========================')
-        print(f"diskplorer.py {command}")
+        print(f"python3 diskplorer.py {command}")
         run_parallel(self.__run, [(ip, command) for ip in self.ips])
         print(f'============== Disk Explorer run: done [{datetime.now().strftime("%H:%M:%S")}] ===========================')
 
     def __download(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
-        os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
 
         print(f'    [{ip}] Downloading to [{dest_dir}]')
         self.new_ssh(ip).scp_from_remote(f'diskplorer/*.{{svg,csv}}', dest_dir)
@@ -306,7 +336,7 @@ class Fio:
 
     def __download(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
-        os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
 
         print(f'    [{ip}] Downloading to [{dest_dir}]')
         self.new_ssh(ip).scp_from_remote(f'{self.dir_name}/*', dest_dir)
@@ -372,7 +402,7 @@ class CassandraStress:
 
     def __download(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
-        os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
         print(f'    [{ip}] Downloading to [{dest_dir}]')
         self.new_ssh(ip).scp_from_remote(f'*.{{html,hdr}}', dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}] done')

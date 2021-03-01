@@ -12,7 +12,7 @@ variable "owner" {
 }
 
 variable "keypair_name" {
-    default = "blibli"
+    default = "peter.veentjer"
 }
 
 variable "public_key_location" {
@@ -29,21 +29,35 @@ variable "cluster_size" {
 
 variable "cluster_instance_type" {
     #default = "c5d.9xlarge"
-    default = "i3.8xlarge"
-    #default = "r5b.4xlarge"
+    #default = "i3.8xlarge"
+    default = "r5b.4xlarge"
 }
 
 variable "cluster_ami" {
-    # fedora 33
-    default = "ami-0054436646144eb33"
+    # centos us-east-2
+    #default = "ami-01e36b7901e884a10"
     
-    # ubuntu
+    # rhel us-east-2
+    default = "ami-03d64741867e7bb94"
+    
+    # fedora 33
+    #default = "ami-0054436646144eb33"
+    
+    #ubuntu
     #default = "ami-0996d3051b72b5b2c"
+    
+    # centos 7
+    #default = "ami-01e36b7901e884a10"
+    
+    # rhel 8
+    #default = "ami-03d64741867e7bb94"
 }
 
 variable "cluster_user" {
-    default = "fedora"
+    #default = "fedora"
     #default = "ubuntu"
+    default = "centos"
+    #default = "ec2-user"
 }
 
 variable "cluster_name" {
@@ -59,11 +73,11 @@ variable ebs_block_device-volume_size {
 }
 
 variable ebs_block_device-iops {
-    default = null
+    default = "64000"
 }
 
 variable ebs_block_device-volume_type {
-    default = "gp3"    
+    default = "io1"    
 }
 
 

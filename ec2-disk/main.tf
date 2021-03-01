@@ -11,8 +11,8 @@ resource "aws_key_pair" "keypair" {
 
 # ==========cluster ==========================
 
-resource "aws_security_group" "cluster-sg" {
-    name        = "cluster-sg"
+resource "aws_security_group" "cluster-sg1" {
+    name        = "cluster-sg1"
     description = "Security group for the cluster"
 
     ingress {
@@ -49,13 +49,37 @@ resource "aws_instance" "cluster" {
     }
 
     vpc_security_group_ids = [
-        aws_security_group.cluster-sg.id
+        aws_security_group.cluster-sg1.id
     ]
   
     # read following if devices don't show up
     # https://stackoverflow.com/questions/22816878/my-mounted-ebs-volume-is-not-showing-up
     ebs_block_device {
-        device_name             = var.ebs_block_device-device_name
+        device_name             = "/dev/xvdb"
+        volume_size             = var.ebs_block_device-volume_size
+        iops                    = var.ebs_block_device-iops
+        volume_type             = var.ebs_block_device-volume_type
+        delete_on_termination   = true
+    }
+    
+    ebs_block_device {
+        device_name             = "/dev/xvdd"
+        volume_size             = var.ebs_block_device-volume_size
+        iops                    = var.ebs_block_device-iops
+        volume_type             = var.ebs_block_device-volume_type
+        delete_on_termination   = true
+    }
+ 
+    ebs_block_device {
+        device_name             = "/dev/xvde"
+        volume_size             = var.ebs_block_device-volume_size
+        iops                    = var.ebs_block_device-iops
+        volume_type             = var.ebs_block_device-volume_type
+        delete_on_termination   = true
+    }
+    
+    ebs_block_device {
+        device_name             = "/dev/xvdf"
         volume_size             = var.ebs_block_device-volume_size
         iops                    = var.ebs_block_device-iops
         volume_type             = var.ebs_block_device-volume_type

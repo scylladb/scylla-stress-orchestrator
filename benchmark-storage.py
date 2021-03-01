@@ -12,13 +12,15 @@ from common import Fio
 properties          = common.load_yaml('properties.yml')
 ssh_options         = properties['ssh_options']
 terraform_plan      = properties.get('terraform_plan')
-user                = "fedora"
-basename            = "storage/i3.8xlarge/"
+user                = "ec2-user"
+basename            = "storage/r5b.4xlarge/"
 
 def make_data_dir(ip, dev, dir):
     print("Creating and mounting file system: started")
     ssh = Ssh(ip, user, ssh_options)
     ssh.run("lsblk")
+    ssh.run(f"sudo umount {dev} || true")
+    ssh.run(f"sudo rm -fr {dir}")
     ssh.run(f"sudo mkfs -t xfs {dev}")
     ssh.run(f"sudo mkdir {dir}")
     ssh.run(f"sudo mount {dev} {dir}")
@@ -27,22 +29,59 @@ def make_data_dir(ip, dev, dir):
     ssh.run("lsblk")
     print("Creating and mounting file system: done")
     
-def run_diskExplorer(name, dev):
+    
+def run_instanceStore_DiskExplorer(name, dev):
     dir             = "/mnt/data"
-    iteration       = Iteration(f"{basename}/{name}")
+    iteration       = Iteration(f"{basename}/{name}", "centos-raid")
     environment     = common.load_yaml('environment.yml')
     public_ips      = environment['cluster_public_ips']
     
-    make_data_dir(public_ips[0], dev, dir)   
+    common.collect_ec2_metadata(public_ips, user, ssh_options, iteration.dir)
+    
+    ssh = Ssh(public_ips[0], user, ssh_options)
+    ssh.run("lsblk")
+    ssh.run("sudo yum -y install epel-release")
+    ssh.run("sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo")
+    ssh.run("sudo yum -y install scylla")
+    ssh.run("sudo scylla_raid_setup --disk /dev/nvme0n1,/dev/nvme1n1,/dev/nvme2n1,/dev/nvme3n1")
+        
+    make_data_dir(public_ips[0], "/dev/md0", dir)
    
     diskExplorer = DiskExplorer(public_ips, user, ssh_options)
     diskExplorer.install()
-    diskExplorer.run(f"-o diskplorer -d {dir}")
+    #diskExplorer.run(f"-o diskplorer -d {dir}")
     diskExplorer.download(iteration.dir)
+
+def run_ebs_DiskExplorer(name, dev):
+    dir             = "/mnt/data"
+    iteration       = Iteration(f"{basename}/{name}", "centos-raid")
+    environment     = common.load_yaml('environment.yml')
+    public_ips      = environment['cluster_public_ips']
+
+    common.collect_ec2_metadata(public_ips, user, ssh_options, iteration.dir)
+    
+#    ssh = Ssh(public_ips[0], user, ssh_options)
+#    ssh.run("sudo yum -y install epel-release")
+#    ssh.run("sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo")
+#    ssh.run("sudo yum -y install scylla")
+#    ssh.run("lsblk")
+#    ssh.run("sudo scylla_raid_setup --disk /dev/nvme1n1,/dev/nvme2n1,/dev/nvme3n1,/dev/nvme4n1")
+    
+#    make_data_dir(public_ips[0], "/dev/md0", dir)
+#    diskExplorer = DiskExplorer(public_ips, user, ssh_options)
+#    diskExplorer.install()
+#    #diskExplorer.run(f"-o diskplorer -d {dir}")
+#    diskExplorer.download(iteration.dir)
 
 
 terraform.apply(terraform_plan)
-run_diskExplorer("instance-store/", "/dev/nvme1n1") 
+
+
+
+#run_instanceStore_DiskExplorer("instance-store-raid/", "/dev/nvme1n1")
+
+run_ebs_DiskExplorer("io1-raid/", "/dev/nvme1n1") 
+
 #terraform.destroy(terraform_plan)
 
 #terraform.apply(terraform_plan,f'-var="ebs_block_device-volume_size=3000" -var="ebs_block_device-volume_type=gp2" ')
