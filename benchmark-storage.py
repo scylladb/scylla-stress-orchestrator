@@ -13,7 +13,7 @@ properties          = common.load_yaml('properties.yml')
 ssh_options         = properties['ssh_options']
 terraform_plan      = properties.get('terraform_plan')
 user                = "ec2-user"
-basename            = "storage/r5b.4xlarge/"
+basename            = "storage/junk-i3.4xlarge/"
 
 def make_data_dir(ip, dev, dir):
     print("Creating and mounting file system: started")
@@ -43,14 +43,15 @@ def run_instanceStore_DiskExplorer(name, dev):
     ssh.run("sudo yum -y install epel-release")
     ssh.run("sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo")
     ssh.run("sudo yum -y install scylla")
-    ssh.run("sudo scylla_raid_setup --disk /dev/nvme0n1,/dev/nvme1n1,/dev/nvme2n1,/dev/nvme3n1")
+    ssh.run("sudo scylla_raid_setup --disk /dev/nvme0n1,/dev/nvme1n1")
         
     make_data_dir(public_ips[0], "/dev/md0", dir)
    
     diskExplorer = DiskExplorer(public_ips, user, ssh_options)
     diskExplorer.install()
-    #diskExplorer.run(f"-o diskplorer -d {dir}")
+    #diskExplorer.run(f"-o diskplorer -d {dir} -m 1000")
     diskExplorer.download(iteration.dir)
+
 
 def run_ebs_DiskExplorer(name, dev):
     dir             = "/mnt/data"
@@ -60,27 +61,25 @@ def run_ebs_DiskExplorer(name, dev):
 
     common.collect_ec2_metadata(public_ips, user, ssh_options, iteration.dir)
     
-#    ssh = Ssh(public_ips[0], user, ssh_options)
-#    ssh.run("sudo yum -y install epel-release")
-#    ssh.run("sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo")
-#    ssh.run("sudo yum -y install scylla")
-#    ssh.run("lsblk")
-#    ssh.run("sudo scylla_raid_setup --disk /dev/nvme1n1,/dev/nvme2n1,/dev/nvme3n1,/dev/nvme4n1")
+    ssh = Ssh(public_ips[0], user, ssh_options)
+    ssh.run("sudo yum -y install epel-release")
+    ssh.run("sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo")
+    ssh.run("sudo yum -y install scylla")
+    ssh.run("lsblk")
+    ssh.run("sudo scylla_raid_setup --disk /dev/xvdb,/dev/xvdc,/dev/xvdd,/dev/xvde")
     
-#    make_data_dir(public_ips[0], "/dev/md0", dir)
-#    diskExplorer = DiskExplorer(public_ips, user, ssh_options)
-#    diskExplorer.install()
-#    #diskExplorer.run(f"-o diskplorer -d {dir}")
-#    diskExplorer.download(iteration.dir)
+    make_data_dir(public_ips[0], "/dev/md0", dir)
+    diskExplorer = DiskExplorer(public_ips, user, ssh_options)
+    diskExplorer.install()
+    #diskExplorer.run(f"-o diskplorer -d {dir}")
+    diskExplorer.download(iteration.dir)
 
 
 terraform.apply(terraform_plan)
 
+run_instanceStore_DiskExplorer("instance-store-raid/", "/dev/nvme1n1")
 
-
-#run_instanceStore_DiskExplorer("instance-store-raid/", "/dev/nvme1n1")
-
-run_ebs_DiskExplorer("io1-raid/", "/dev/nvme1n1") 
+#run_ebs_DiskExplorer("io2-raid/", "/dev/nvme1n1") 
 
 #terraform.destroy(terraform_plan)
 

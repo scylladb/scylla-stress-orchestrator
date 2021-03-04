@@ -28,10 +28,6 @@ def apply(terraform_plan, options=None):
     
     to_environment_yaml(terraform_plan)
     
-    print("Giving environment time to start")
-    time.sleep(5)
-    print("Giving environment time to start: done")
-
 
 def destroy(terraform_plan, options=None):
     print(f'Using terraform_plan [{terraform_plan}]')

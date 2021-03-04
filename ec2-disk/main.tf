@@ -54,56 +54,36 @@ resource "aws_instance" "cluster" {
   
     # read following if devices don't show up
     # https://stackoverflow.com/questions/22816878/my-mounted-ebs-volume-is-not-showing-up
-    ebs_block_device {
-        device_name             = "/dev/xvdb"
-        volume_size             = var.ebs_block_device-volume_size
-        iops                    = var.ebs_block_device-iops
-        volume_type             = var.ebs_block_device-volume_type
-        delete_on_termination   = true
-    }
-    
-    ebs_block_device {
-        device_name             = "/dev/xvdd"
-        volume_size             = var.ebs_block_device-volume_size
-        iops                    = var.ebs_block_device-iops
-        volume_type             = var.ebs_block_device-volume_type
-        delete_on_termination   = true
-    }
- 
-    ebs_block_device {
-        device_name             = "/dev/xvde"
-        volume_size             = var.ebs_block_device-volume_size
-        iops                    = var.ebs_block_device-iops
-        volume_type             = var.ebs_block_device-volume_type
-        delete_on_termination   = true
-    }
-    
-    ebs_block_device {
-        device_name             = "/dev/xvdf"
-        volume_size             = var.ebs_block_device-volume_size
-        iops                    = var.ebs_block_device-iops
-        volume_type             = var.ebs_block_device-volume_type
-        delete_on_termination   = true
-    }
-
-    #connection {
-    #    type        = "ssh"
-    #    user        = var.cluster_user
-    #    private_key = file(var.private_key_location)
-    #    host        = self.public_ip
-    #    agent       = false
-    #    timeout     = "60m"
+    #ebs_block_device {
+    #    device_name             = "/dev/xvdb"
+    #    volume_size             = var.ebs_block_device-volume_size
+    #    iops                    = var.ebs_block_device-iops
+    #    volume_type             = var.ebs_block_device-volume_type
+    #    delete_on_termination   = true
     #}
-   
-    #provisioner "remote-exec" {
-    #       inline = [
-    #        "ls"
-    #        #"sudo mkfs -t xfs /dev/nvme1n1",
-    #        #"sudo mkdir /data",
-    #        #"sudo mount /dev/nvme1n1 /data",
-    #        #"sudo chown -R ec2-user /data",
-    #        #"sudo chmod -R g+rw /data"
-    #    ]
+    
+    #ebs_block_device {
+    #    device_name             = "/dev/xvdc"
+    #    volume_size             = var.ebs_block_device-volume_size
+    #    iops                    = var.ebs_block_device-iops
+    #    volume_type             = var.ebs_block_device-volume_type
+    #    delete_on_termination   = true
+    #}
+ 
+    #ebs_block_device {
+    #    device_name             = "/dev/xvdd"
+    #    volume_size             = var.ebs_block_device-volume_size
+    #    iops                    = var.ebs_block_device-iops
+    #    volume_type             = var.ebs_block_device-volume_type
+    #    delete_on_termination   = true
+    #}
+    
+    #ebs_block_device {
+    #    device_name             = "/dev/xvde"
+    #    volume_size             = var.ebs_block_device-volume_size
+    #    iops                    = var.ebs_block_device-iops
+    #    volume_type             = var.ebs_block_device-volume_type
+    #    delete_on_termination   = true
     #}
 }
 

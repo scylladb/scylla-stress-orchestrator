@@ -36,6 +36,9 @@ class Iteration:
         latest_dir = os.path.join(self.trial_dir, "latest")
         if os.path.isdir(latest_dir):
             os.unlink(latest_dir)
+        elif os.path.islink(latest_dir):    
+            #it is a broken sym link, so lets remove it.
+            os.remove(latest_dir)
         os.symlink(self.dir, latest_dir, target_is_directory=True)
         print(f'Using iteration directory [{self.dir}]')
 
@@ -128,13 +131,34 @@ def run_parallel(t, args_list):
    
 
 class Ssh:
-    log_ssh = False
-    max_attempts = 60
 
-    def __init__(self, ip, user, ssh_options):
+    def __init__(self, ip, user, ssh_options, wait_for_connect=True, silent_seconds=30):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options
+        self.wait_for_connect = wait_for_connect 
+        self.silent_seconds = silent_seconds
+        self.log_ssh = False
+
+    def __wait_for_connect(self):
+        if not self.wait_for_connect:
+            return
+        
+        cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} ls'
+        for i in range(1, 300):
+            if i > self.silent_seconds:
+                print(f"[{i}] Connect to {self.ip}")
+                exitcode = subprocess.call(cmd, shell=True)
+            else:                
+                exitcode = subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    
+            if exitcode == 0 or exitcode == 1: # todo: we need to deal better with exit code
+                self.wait_for_connect = False
+                return
+            time.sleep(1)
+
+        raise Exception(f"Failed to connect to {self.ip}, exitcode={exitcode}")
+    
 
     def scp_from_remote(self, src, dst):
         cmd = f'scp {self.ssh_options} -q {self.user}@{self.ip}:{src} {dst}'
@@ -145,6 +169,7 @@ class Ssh:
         self.__scp(cmd)
                 
     def __scp(self, cmd):
+        self.__wait_for_connect()
         # we need to retry under certain conditions
         #for attempt in range(1, self.max_attempts):
         #    if self.log_ssh or attempt > 1:
@@ -163,26 +188,19 @@ class Ssh:
         #raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
                         
     def run(self, command):
+        self.__wait_for_connect()
+        
         cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         
         # we need to retry under certain conditions
-        for attempt in range(1, self.max_attempts):
-            if self.log_ssh or attempt > 1:
-                print(f'[{attempt}] {cmd}')
-            exitcode = subprocess.call(cmd, shell=True)
-            if exitcode == 0 or exitcode == 1: # todo: we need to deal better with exit code
-                return
-            elif exitcode in [2, 65, 255]:
-                # 2 is connection failed
-                # 65 is host not allowed to connect.
-                time.sleep(5)
-                continue
-            else:
-                raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
-            
-        raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
+        exitcode = subprocess.call(cmd, shell=True)
+        if exitcode == 0 or exitcode == 1: # todo: we need to deal better with exit code
+            return
+        else:
+            raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
             
     def update(self):
+        print(f'    [{self.ip}] Update: started')
         self.run(
             f"""if hash apt-get 2>/dev/null; then
                 sudo apt-get -y -qq update
@@ -194,6 +212,7 @@ class Ssh:
                 echo "Cannot update: yum/apt/dnf not found"
                 return 1
             fi""")
+        print(f'    [{self.ip}] Update: done')
 
     def install_one(self, package_list):
         # could be done a lot better by asking if it exist and then installing it.
@@ -233,17 +252,18 @@ def collect_ec2_metadata(ips, ssh_user, ssh_options, dir):
 
 class DiskExplorer:
 
-    def __init__(self, ips, ssh_user, ssh_options):
+    def __init__(self, ips, ssh_user, ssh_options, capture_lsblk = True):
         self.ips = ips
         self.ssh_user = ssh_user
         self.ssh_options = ssh_options
+        self.capture_lsblk = capture_lsblk
 
-    def new_ssh(self, ip):
+    def __new_ssh(self, ip):
         return Ssh(ip, self.ssh_user, self.ssh_options)
 
     def __install(self, ip):
         print(f'    [{ip}] Instaling disk-explorer: started')
-        ssh = self.new_ssh(ip)
+        ssh = self.__new_ssh(ip)
         ssh.update()
         ssh.install('git')
         ssh.install('fio')
@@ -262,9 +282,11 @@ class DiskExplorer:
 
     def __run(self, ip, cmd):
         print(f'    [{ip}] Run: started')
-        ssh = self.new_ssh(ip)
+        ssh = self.__new_ssh(ip)
         ssh.run('rm -fr diskplorer/*.svg')
         ssh.run(f'rm -fr diskplorer/fiotest.tmp')
+        if self.capture_lsblk:
+            ssh.run(f'lsblk > lsblk.out')
         ssh.run(f'cd diskplorer && python3 diskplorer.py {cmd}')
         # the file is 100 GB; so we want to remove it.
         ssh.run(f'rm -fr diskplorer/fiotest.tmp')
@@ -281,7 +303,9 @@ class DiskExplorer:
         os.makedirs(dest_dir, exist_ok=True)
 
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        self.new_ssh(ip).scp_from_remote(f'diskplorer/*.{{svg,csv}}', dest_dir)
+        self.__new_ssh(ip).scp_from_remote(f'diskplorer/*.{{svg,csv}}', dest_dir)
+        if self.capture_lsblk:
+            self.__new_ssh(ip).scp_from_remote(f'lsblk.out', dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
     def download(self, dir):
@@ -292,17 +316,18 @@ class DiskExplorer:
 
 class Fio:
 
-    def __init__(self, ips, ssh_user, ssh_options):
+    def __init__(self, ips, ssh_user, ssh_options, capture_lsblk = True):
         self.ips = ips
         self.ssh_user = ssh_user
         self.ssh_options = ssh_options
         self.dir_name = "fio-"+datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        self.capture_lsblk = capture_lsblk
      
-    def new_ssh(self, ip):
+    def __new_ssh(self, ip):
         return Ssh(ip, self.ssh_user, self.ssh_options)
 
     def __upload(self, ip, file):
-        self.new_ssh(ip).scp_to_remote(file, self.dir_name)
+        self.__new_ssh(ip).scp_to_remote(file, self.dir_name)
 
     def upload(self, file):
         print("============== Upload: started ===========================")
@@ -311,7 +336,7 @@ class Fio:
 
     def __install(self, ip):
         print(f'    [{ip}] Instaling fio: started')
-        ssh = self.new_ssh(ip)
+        ssh = self.__new_ssh(ip)
         ssh.update()
         ssh.install('fio')
         print(f'    [{ip}] Instaling fio: done')
@@ -323,7 +348,10 @@ class Fio:
 
     def __run(self, ip, options):
         print(f'    [{ip}] fio: started')
-        ssh = self.new_ssh(ip)        
+        ssh = self.__new_ssh(ip)        
+        if self.capture_lsblk:
+            ssh.run(f'lsblk > lsblk.out')
+  
         ssh.run(f'mkdir -p {self.dir_name}')
         ssh.run(f'cd {self.dir_name} && sudo fio {options}')        
         print(f'    [{ip}] fio: done')
@@ -339,7 +367,11 @@ class Fio:
         os.makedirs(dest_dir, exist_ok=True)
 
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        self.new_ssh(ip).scp_from_remote(f'{self.dir_name}/*', dest_dir)
+        ssh = __new_ssh(ip) 
+        ssh.scp_from_remote(f'{self.dir_name}/*', dest_dir)
+        if self.capture_lsblk:
+            self.__new_ssh(ip).scp_from_remote(f'lsblk.out', dest_dir)
+  
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
     def download(self, dir):

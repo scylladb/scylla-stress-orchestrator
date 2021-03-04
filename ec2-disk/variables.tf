@@ -29,8 +29,8 @@ variable "cluster_size" {
 
 variable "cluster_instance_type" {
     #default = "c5d.9xlarge"
-    #default = "i3.8xlarge"
-    default = "r5b.4xlarge"
+    default = "i3.4xlarge"
+    #default = "r5d.4xlarge"
 }
 
 variable "cluster_ami" {
@@ -39,6 +39,9 @@ variable "cluster_ami" {
     
     # rhel us-east-2
     default = "ami-03d64741867e7bb94"
+    
+    # amazon linux 
+    #default = "ami-09246ddb00c7c4fef"
     
     # fedora 33
     #default = "ami-0054436646144eb33"
@@ -56,8 +59,8 @@ variable "cluster_ami" {
 variable "cluster_user" {
     #default = "fedora"
     #default = "ubuntu"
-    default = "centos"
-    #default = "ec2-user"
+    #default = "centos"
+    default = "ec2-user"
 }
 
 variable "cluster_name" {
@@ -69,7 +72,7 @@ variable ebs_block_device-device_name {
 }
 
 variable ebs_block_device-volume_size {
-    default = "3000"    
+    default = "2500"    
 }
 
 variable ebs_block_device-iops {
@@ -77,7 +80,7 @@ variable ebs_block_device-iops {
 }
 
 variable ebs_block_device-volume_type {
-    default = "io1"    
+    default = "io2"    
 }
 
 
