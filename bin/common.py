@@ -218,7 +218,6 @@ class Ssh:
             fi""")
         print(f'    [{self.ip}] Update: done')
 
-# foo={apt-cache search --names-only 'package'}
     def install_one(self, package_list):
          self.run(
             f"""set -e
