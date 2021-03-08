@@ -46,7 +46,7 @@ class Iteration:
 class HdrLogMerging:
     
     def __init__(self, properties):
-        self.properties = properties
+        self.properties = properties        
 
     # def __log_merging(self, files):
 
@@ -65,13 +65,14 @@ class HdrLogMerging:
                 files_map[base] = files
             files.append(hdr_file)
 
+        lib_dir=f"{os.environ['SSO']}/lib/"    
         cwd = os.getcwd()
         jvm_path = self.properties['jvm_path']
         for name, files in files_map.items():
             input = ""
             for file in files:
                 input = input + " -ifp " + file
-            cmd = f'{jvm_path}/bin/java -cp {cwd}/lib/processor.jar CommandDispatcherMain union {input} -of {dir}/{name}.hdr'
+            cmd = f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain union {input} -of {dir}/{name}.hdr'
             print(cmd)
             os.system(cmd)
 
@@ -98,6 +99,7 @@ class HdrLogProcessor:
         new_cwd = os.path.dirname(os.path.realpath(file))
         os.chdir(new_cwd)
 
+
         tags = set()
         with open(filename, "r") as hdr_file:
             reader = csv.reader(hdr_file, delimiter=',')
@@ -109,12 +111,14 @@ class HdrLogProcessor:
                 tag = first_column[4:]
                 tags.add(tag)
 
+        lib_dir=f"{os.environ['SSO']}/lib/"
+        print("lib dir = "+lib_dir)
         for tag in tags:
             os.system(
-                f'{jvm_path}/bin/java -cp {old_cwd}/lib/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor -i {filename} -o {filename_no_ext + "_" + tag} -csv -tag {tag}')
+                f'{jvm_path}/bin/java -cp {lib_dir}/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor -i {filename} -o {filename_no_ext + "_" + tag} -csv -tag {tag}')
 
         os.system(
-            f'{jvm_path}/bin/java -cp {old_cwd}/lib/processor.jar CommandDispatcherMain summarize -if {filename_no_ext}.hdr >  {filename_no_ext}-summary.txt')
+            f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain summarize -if {filename_no_ext}.hdr >  {filename_no_ext}-summary.txt')
 
         os.chdir(old_cwd)
         print("------------------ HdrLogProcessor -------------------------------------")
@@ -190,6 +194,8 @@ class Ssh:
     def run(self, command):
         self.__wait_for_connect()
         
+        
+        
         cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         
         # we need to retry under certain conditions
@@ -206,19 +212,42 @@ class Ssh:
                 sudo apt-get -y -qq update
             elif hash yum 2>/dev/null; then
                 sudo yum -y -q update
-            elif hash dnf 2>/dev/null; then
-                sudo dnf -y -q update
             else
-                echo "Cannot update: yum/apt/dnf not found"
-                return 1
+                echo "Cannot update: yum/apt not found"
+                exit 1
             fi""")
         print(f'    [{self.ip}] Update: done')
 
+# foo={apt-cache search --names-only 'package'}
     def install_one(self, package_list):
-        # could be done a lot better by asking if it exist and then installing it.
-        for package in package_list:
-            self.install(package)
-
+         self.run(
+            f"""set -e
+                for package in {" ".join(package_list)} 
+                do                
+                    echo Trying package [$package]
+                    if hash apt-get 2>/dev/null ; then
+                        if sudo apt show $package >/dev/null 2>&1; then
+                            echo Installing $package
+                            sudo apt-get install -y -qq $package
+                            exit 0
+                        fi    
+                     elif hash yum 2>/dev/null; then
+                        if sudo yum list --available $package >/dev/null 2>&1; then
+                            echo Installing $package
+                            sudo yum -y -q install $package
+                            exit 0
+                        fi                        
+                    else
+                        echo "Cannot install $package: yum/apt not found"
+                        exit 1
+                    fi
+                    
+                    echo Not found $package                       
+                done
+                echo "Could not find any of the packages from {package_list}"
+                exit 1
+                """)
+         
     def install(self, package):
         print(f'    [{self.ip}] Install: {package}')
         self.run(
@@ -229,8 +258,8 @@ class Ssh:
             elif hash dnf 2>/dev/null; then
                 sudo dnf -y -q install {package}
             else
-                echo "Cannot install {package}: yum/apt/dnf not found"
-                return 1
+                echo "Cannot install {package}: yum/apt not found"
+                exit 1
             fi""")
 
 
@@ -395,7 +424,7 @@ class CassandraStress:
         print(f'    [{ip}] Instaling cassandra-stress: started')
         ssh = self.new_ssh(ip)
         ssh.update()
-        ssh.install_one(['java-1.8.0-openjdk', 'openjdk-8-jdk'])
+        ssh.install_one(['openjdk-8-jdk','java-1.8.0-openjdk'])
         ssh.install('wget')
         ssh.run(
             f'wget -q -N https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz')
