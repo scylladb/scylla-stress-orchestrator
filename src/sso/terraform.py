@@ -1,10 +1,9 @@
-# !/bin/python3
-
+import json
 import os
 import subprocess
+
 import yaml
-import json
-import time
+
 
 def apply(terraform_plan, options=None):
     option_str = "" 
@@ -18,8 +17,7 @@ def apply(terraform_plan, options=None):
     exitcode = subprocess.call(cmd, shell=True)
     if exitcode != 0:
         raise Exception(f'Failed terraform init, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
-    
-    
+
     cmd = f'terraform -chdir={terraform_plan} apply -auto-approve {option_str}'    
     print(cmd)
     exitcode = subprocess.call(cmd, shell=True)    
@@ -45,9 +43,8 @@ def destroy(terraform_plan, options=None):
     if exitcode != 0:
         raise Exception(f'Failed terraform destroy, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
     
-    
-    
-# Extracts all the output from a terraform directory and places it into an environment.yaml
+
+# Extracts all the output from a sso_terraform directory and places it into an environment.yaml
 def to_environment_yaml(dir):
     output_text = subprocess.check_output(f'terraform -chdir={dir} output -json', shell=True, text=True)
     output = json.loads(output_text)

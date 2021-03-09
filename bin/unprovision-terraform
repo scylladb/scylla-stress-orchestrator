@@ -1,7 +1,12 @@
 #!/bin/python3
 
+
+import sys
+import os
+sys.path.insert(1, f"{os.environ['SSO']}/src/")
+
 import yaml
-import terraform
+from sso import terraform
 
 with open('properties.yml') as f:
     properties = yaml.load(f, Loader=yaml.FullLoader)
