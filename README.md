@@ -11,7 +11,7 @@ Scylla Stress Orchestrator requires the following tools to be installed:
 - Java 1.8+
 - Awscli
 
-## Installation:
+## Installation
 
 Check out the following github project
 
@@ -42,7 +42,8 @@ cd my-benchmark
 ```
 
 Copy the directory ec2-generic from the scylla-stress-orchestrator. This contains an example Terraform configuration
-of a complete Scylla cluster including load generator. 
+of a complete Scylla cluster including load generator. This is where you can change the configuration of your test
+environment e.g. the instance type, the number of machines etc.
 
 Call
 ```
@@ -65,7 +66,7 @@ Make sure the jvm_path is configured correctly.
 
 ### Provisioning
 
-To provision the environment, call the following:
+To provision the environment, call:
 
 ```
 provision-terraform
@@ -79,7 +80,8 @@ To destroy the environment, call the following:
 unprovision-terraform
 ```
 
-Make sure you unprovision your environment after you are done with the benchmarks, otherwise you could run into a very high bill.
+Make sure you unprovision your environment after you are done with the benchmarks, otherwise you are at risk of 
+running into a very large EC2 bill.
 
 
 Create a benchmark script e.g. benchmark.py:
@@ -111,7 +113,7 @@ cs.stress(f'write n=2m -log hdrfile=store.hdr -graph file=store.html title=store
 cs.collect_results(iteration.dir)
 ```
 
-And execute 
+To run the benchmark, execute the following:
 ```
 ~/.benchmark.py
 ```
