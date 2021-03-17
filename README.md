@@ -118,5 +118,24 @@ To run the benchmark, execute the following:
 ~/.benchmark.py
 ```
 
-After the benchmark has run, all the results will be downloaded and can be found in 'trials/my-benchmark/'. Every time the benchmark runs, a new directory in 'trials/my-benchmark' is created with a date/time as name. Once the results have been downloaded, the latency distribution files are created and also the latency distribution files over all load generators so you don't need to average percentiles. Also a final text file is generated containing the important metrics for the benchmark like the percentiles, throughput etc.
+After the benchmark has run, all the results will be downloaded and can be found in 'trials/my-benchmark/'. Every time the benchmark runs, a new directory in 'trials/my-benchmark' is created with a date/time as name. 
 
+Once the results have been downloaded, the latency distribution files are created and also the latency distribution files over all load generators so you don't need to average percentiles. Also a final summary text file is generated containing the important metrics for the benchmark like the percentiles, throughput etc.
+
+Example:
+
+```
+WRITE-st.TotalCount=2000000
+WRITE-st.Period(ms)=24174
+WRITE-st.Throughput(ops/sec)=82733.52
+WRITE-st.Min=112000
+WRITE-st.Mean=575880.65
+WRITE-st.StdDev=3727746.45
+WRITE-st.50.000ptile=443135
+WRITE-st.90.000ptile=950783
+WRITE-st.99.000ptile=2207743
+WRITE-st.99.900ptile=2994175
+WRITE-st.99.990ptile=35028991
+WRITE-st.99.999ptile=674234367
+WRITE-st.Max=675282943
+```
