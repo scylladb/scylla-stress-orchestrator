@@ -17,7 +17,9 @@ class Fio:
         return SSH(ip, self.ssh_user, self.ssh_options)
 
     def __upload(self, ip, file):
-        self.__new_ssh(ip).scp_to_remote(file, self.dir_name)
+        ssh = self.__new_ssh(ip)
+        ssh.exec(f"mkdir -p {self.dir_name}")
+        ssh.scp_to_remote(file, self.dir_name)
 
     def upload(self, file):
         print("============== Upload: started ===========================")
@@ -40,10 +42,13 @@ class Fio:
         print(f'    [{ip}] fio: started')
         ssh = self.__new_ssh(ip)
         if self.capture_lsblk:
-            ssh.exec(f'lsblk > lsblk.out')
+            ssh.exec(f'lsblk > lsblk.txt')
 
-        ssh.exec(f'mkdir -p {self.dir_name}')
-        ssh.exec(f'cd {self.dir_name} && sudo fio {options}')
+        ssh.exec(f"""
+            mkdir -p {self.dir_name}
+            cd {self.dir_name}
+            sudo fio {options}            
+            """)
         print(f'    [{ip}] fio: done')
 
     def run(self, options):
