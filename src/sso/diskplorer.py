@@ -39,14 +39,21 @@ class DiskExplorer:
         ssh.exec(f'rm -fr diskplorer/fiotest.tmp')
         if self.capture_lsblk:
             ssh.exec(f'lsblk > lsblk.out')
-        ssh.exec(f'cd diskplorer && python3 diskplorer.py {cmd}')
+        ssh.exec(f"""
+            ulimit -n 64000            
+            ulimit -n
+            ulimit -Sn 64000
+            ulimit -Sn
+            cd diskplorer                 
+            python3 diskplorer.py {cmd}
+            """)
         # the file is 100 GB; so we want to remove it.
         ssh.exec(f'rm -fr diskplorer/fiotest.tmp')
         print(f'    [{ip}] Run: done')
 
     def run(self, command):
         print(
-            f'============== Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]===========================')
+            f'============== Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]===========================')        
         print(f"python3 diskplorer.py {command}")
         run_parallel(self.__run, [(ip, command) for ip in self.ips])
         print(

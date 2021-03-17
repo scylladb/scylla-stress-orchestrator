@@ -20,33 +20,31 @@ class CassandraStress:
         ssh.update()
         if self.scylla_tools:
             print(f'    [{ip}] Instaling cassandra-stress (Scylla): started')
-            ssh.exec(
-                f"""
-            set -e
-            if hash apt-get 2>/dev/null; then
-                sudo apt-get install -y apt-transport-https
-                sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5e08fbd8b5d6ec9c
-                sudo curl -L --output /etc/apt/sources.list.d/scylla.list http://downloads.scylladb.com/deb/ubuntu/scylla-4.3-$(lsb_release -s -c).list
-                sudo apt-get update -y
-                sudo apt-get install -y scylla-tools
-            elif hash yum 2>/dev/null; then
-                sudo yum install  -y -q https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-                sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo
-                sudo yum install -y -q scylla-tools
-            else
-                echo "Cannot install scylla-tools: yum/apt not found"
-                exit 1
-            fi
-            """)
+            ssh.exec(f"""
+                set -e
+                if hash apt-get 2>/dev/null; then
+                    sudo apt-get install -y apt-transport-https
+                    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5e08fbd8b5d6ec9c
+                    sudo curl -L --output /etc/apt/sources.list.d/scylla.list http://downloads.scylladb.com/deb/ubuntu/scylla-4.3-$(lsb_release -s -c).list
+                    sudo apt-get update -y
+                    sudo apt-get install -y scylla-tools
+                elif hash yum 2>/dev/null; then
+                    sudo yum install  -y -q https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+                    sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo
+                    sudo yum install -y -q scylla-tools
+                else
+                    echo "Cannot install scylla-tools: yum/apt not found"
+                    exit 1
+                fi
+                """)    
         else:
             print(f'    [{ip}] Instaling cassandra-stress (Cassandra): started')
             ssh.install_one('openjdk-8-jdk', 'java-1.8.0-openjdk')
             ssh.install('wget')
-            ssh.exec(
-                f"""
-            set -e
-            wget -q -N https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz
-            tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz
+            ssh.exec(f"""
+                set -e
+                wget -q -N https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz
+                tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz
             """)
 
         print(f'    [{ip}] Instaling cassandra-stress: done')
@@ -91,7 +89,7 @@ class CassandraStress:
         self.__new_ssh(ip).scp_from_remote(f'*.{{html,hdr}}', dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
-    def get_results(self, dir):
+    def collect_results(self, dir):
         print("============== Getting results: started ===========================")
         run_parallel(self.__download, [(ip, dir) for ip in self.load_ips])
         HdrLogMerger(self.properties).merge(dir)
