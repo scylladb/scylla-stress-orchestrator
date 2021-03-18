@@ -1,7 +1,8 @@
 import os
+
 from sso.hdr import HdrLogMerger, HdrLogProcessor
 from sso.ssh import SSH
-from sso.util import run_parallel
+from sso.util import run_parallel, WorkerThread
 
 class CassandraStress:
 
@@ -68,6 +69,11 @@ class CassandraStress:
         run_parallel(self.__stress, [(ip, command) for ip in self.load_ips])
         print("============== Cassandra-Stress: done ==============================")
 
+    def async_stress(self, command):
+        thread = WorkerThread(self.stress, (command,))
+        thread.start()
+        return thread.future
+        
     def __ssh(self, ip, command):
         self.__new_ssh(ip).exec(command)
 
