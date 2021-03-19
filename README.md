@@ -23,6 +23,7 @@ Set the enviroment SSO variable in e.g. your ~/.bash_profile or ~/./profile
 
 ```
 export SSO=/path/to/scylla-stress-orchestrator
+export PATH=$SSO/bin:$PATH
 ```
 
 Also set the AWS access key and secret key in the same file:
@@ -42,14 +43,14 @@ cd my-benchmark
 ```
 
 Copy the directory ec2-generic from the scylla-stress-orchestrator. This contains an example Terraform configuration
-of a complete Scylla cluster including load generator. This is where you can change the configuration of your test
+of a complete Scylla cluster including load generators. This is where you can change the configuration of your test
 environment e.g. the instance type, the number of machines etc.
 
-Call
+TO generate the public/private keypair, call the following:
 ```
 make_key
 ```
-This will generate a public/private keypair. These keys are needed to login to the create EC2-instances.
+These keys are needed to login to the create EC2-instances. 
 
 Create a properties.yml file containing
 ```

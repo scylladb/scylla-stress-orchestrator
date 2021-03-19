@@ -16,6 +16,9 @@ class Future:
                  raise Exception() from self.__val
             return self.__val
 
+    def join(self):
+        self.get()
+
     def set(self, val):
         with self.__condition:
             if self.__is_set:
@@ -34,14 +37,11 @@ class WorkerThread(Thread):
         self.future = Future()
         
     def run(self):
-        print("WorkerThread.Started")
         self.exception = None 
         try:
              super().run()
              self.future.set(True)
         except Exception as e:
-            print("WorkerThread.exception")
-            print(e)
             self.exception = e    
             self.future.set(e)
 
