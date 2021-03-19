@@ -8,7 +8,11 @@ sys.path.insert(1, f"{os.environ['SSO']}/src/")
 import yaml
 from sso import terraform
 
-with open('properties.yml') as f:
-    properties = yaml.load(f, Loader=yaml.FullLoader)
-
-terraform.destroy(properties.get('terraform_plan'))
+if len(sys.argv) == 1:
+    with open('properties.yml') as f:
+        properties = yaml.load(f, Loader=yaml.FullLoader)
+    terraform_plan = properties.get('terraform_plan')
+else:
+    terraform_plan = sys.argv[1]
+    
+terraform.destroy(terraform_plan)
