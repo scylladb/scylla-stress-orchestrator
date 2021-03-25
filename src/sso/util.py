@@ -56,5 +56,15 @@ def run_parallel(target, args_list, ignore_errors = False):
         thread.join()
         if not ignore_errors and thread.exception:
             raise Exception() from thread.exception
-        
+    
+    
+def join_all(*futures):
+    for f in futures:
+        f.join()
+      
+
+def print_important(text):
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    print("                     "+text)
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 

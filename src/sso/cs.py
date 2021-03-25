@@ -4,6 +4,7 @@ from sso.hdr import HdrLogMerger, HdrLogProcessor
 from sso.ssh import SSH
 from sso.util import run_parallel, WorkerThread
 
+
 class CassandraStress:
 
     def __init__(self, load_ips, properties, scylla_tools=True):
@@ -37,7 +38,7 @@ class CassandraStress:
                     echo "Cannot install scylla-tools: yum/apt not found"
                     exit 1
                 fi
-                """)    
+                """)
         else:
             print(f'    [{ip}] Instaling cassandra-stress (Cassandra): started')
             ssh.install_one('openjdk-8-jdk', 'java-1.8.0-openjdk')
@@ -64,16 +65,55 @@ class CassandraStress:
         print(full_cmd)
         self.__new_ssh(ip).exec(full_cmd)
 
-    def stress(self, command):
-        print("============== Cassandra-Stress: started ===========================")
-        run_parallel(self.__stress, [(ip, command) for ip in self.load_ips])
-        print("============== Cassandra-Stress: done ==============================")
-
-    def async_stress(self, command):
-        thread = WorkerThread(self.stress, (command,))
+    def stress(self, command, load_index=None):
+        if load_index is None:
+            print("============== Cassandra-Stress: started ===========================")
+            run_parallel(self.__stress, [(ip, command) for ip in self.load_ips])
+            print("============== Cassandra-Stress: done ==============================")
+        else:
+            print("using load_index " + str(load_index))
+            self.__stress(self.load_ips[load_index], command)
+        
+    def async_stress(self, command, load_index=None):
+        thread = WorkerThread(self.stress, (command, load_index))
         thread.start()
         return thread.future
+
+    def insert(self, profile, item_count, nodes, mode = "native cql3", rate="threads=500"):                
+        self.upload(profile)
+
+        print(f"============== Inserting {item_count} items ===========================")
+
+        per_load_generator = item_count // len(self.load_ips)
+        start = 1
+        end = per_load_generator
+        cmd_list = []
+        for i in range(0, len(self.load_ips)):
+            cmd = f'user profile={profile} "ops(insert=1)" n={per_load_generator} no-warmup -pop seq={start}..{end} -mode {mode} -rate {rate}  -node {nodes}'
+            print(self.load_ips[i]+" "+cmd)
+            cmd_list.append(cmd)
+            start = end + 1
+            end = end + per_load_generator
+
+        futures = []
+        for i in range(0, len(self.load_ips)):   
+            f = self.async_stress(cmd_list[i], load_index=i)
+            futures.append(f)
+         
+        for f in futures:
+            f.join()
         
+        print(f"============== Inserting {item_count} items: done =======================")
+        
+#        f1 = cs.async_stress(
+#            f'user profile=./stress_profile.yaml "ops(insert=1)" no-warmup  n={item_count_per_load_generator} -pop seq=1..#{item_count_per_load_generator} -mode native cql3 -rate threads=500 -node {node_1_2_string}', 
+#        load_index = 0) 
+#
+#        f2 = cs.async_stress(
+#            f'user profile=./stress_profile.yaml "ops(insert=1)" n={item_count_per_load_generator} no-warmup  -pop #seq={item_count_per_load_generator+1}..{2*item_count_per_load_generator} -mode native cql3 -rate threads=500 -node #{node_1_2_string}', 
+#            load_index = 1) 
+
+
     def __ssh(self, ip, command):
         self.__new_ssh(ip).exec(command)
 

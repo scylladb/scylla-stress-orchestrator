@@ -11,6 +11,8 @@ if len(sys.argv) == 1:
     with open('properties.yml') as f:
         properties = yaml.load(f, Loader=yaml.FullLoader)
     terraform_plan = properties.get('terraform_plan')
+    if not terraform_plan:
+        raise Exception("Could not find 'terraform_plan' in properties.yml")
 else:
     terraform_plan = sys.argv[1]
 

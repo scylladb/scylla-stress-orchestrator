@@ -37,7 +37,8 @@ variable "cluster_user" {
 }
 
 variable "scylla_ami" {
-    default = "ami-02720bcdd160a5d8c"
+    #  4.1.2-0.20200715.3e6c6d5f582    
+    default = "ami-0fefb980cbfe6750a"
 }
 
 
