@@ -104,15 +104,6 @@ class CassandraStress:
             f.join()
         
         print(f"============== Inserting {item_count} items: done =======================")
-        
-#        f1 = cs.async_stress(
-#            f'user profile=./stress_profile.yaml "ops(insert=1)" no-warmup  n={item_count_per_load_generator} -pop seq=1..#{item_count_per_load_generator} -mode native cql3 -rate threads=500 -node {node_1_2_string}', 
-#        load_index = 0) 
-#
-#        f2 = cs.async_stress(
-#            f'user profile=./stress_profile.yaml "ops(insert=1)" n={item_count_per_load_generator} no-warmup  -pop #seq={item_count_per_load_generator+1}..{2*item_count_per_load_generator} -mode native cql3 -rate threads=500 -node #{node_1_2_string}', 
-#            load_index = 1) 
-
 
     def __ssh(self, ip, command):
         self.__new_ssh(ip).exec(command)
