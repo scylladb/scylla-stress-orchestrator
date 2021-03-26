@@ -1,4 +1,5 @@
 import os
+import time
 
 from sso.hdr import HdrLogMerger, HdrLogProcessor
 from sso.ssh import SSH
@@ -79,14 +80,16 @@ class CassandraStress:
         thread.start()
         return thread.future
 
-    def insert(self, profile, item_count, nodes, mode = "native cql3", rate="threads=500"):                
-        self.upload(profile)
-
+    def insert(self, profile, item_count, nodes, mode = "native cql3", rate="threads=700", sequence_start=None):                
         print(f"============== Inserting {item_count} items ===========================")
-
+        start_seconds = time.time()
+        
         per_load_generator = item_count // len(self.load_ips)
-        start = 1
-        end = per_load_generator
+        start = sequence_start
+        if sequence_start is None:
+            start = 1
+        
+        end = start + per_load_generator -1
         cmd_list = []
         for i in range(0, len(self.load_ips)):
             cmd = f'user profile={profile} "ops(insert=1)" n={per_load_generator} no-warmup -pop seq={start}..{end} -mode {mode} -rate {rate}  -node {nodes}'
@@ -103,6 +106,9 @@ class CassandraStress:
         for f in futures:
             f.join()
         
+        duration_seconds = time.time()-start_seconds
+        print(f"Duration : {duration_seconds} seconds")
+        print(f"Insertion rate: {item_count//duration_seconds} items/second")
         print(f"============== Inserting {item_count} items: done =======================")
 
     def __ssh(self, ip, command):
