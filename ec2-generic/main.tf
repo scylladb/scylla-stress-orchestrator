@@ -245,8 +245,8 @@ resource "aws_instance" "prometheus" {
             "sudo apt-get -y install -q docker.io",   
             "sudo usermod -aG docker $USER",
             "sudo systemctl enable docker",
-            "wget -q https://github.com/scylladb/scylla-monitoring/archive/branch-3.6.tar.gz",
-            "tar -xf branch-3.6.tar.gz",
+            "wget -q https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.6.3.tar.gz",
+            "tar -xf scylla-monitoring-3.6.3.tar.gz",
             "sudo systemctl restart docker",
         ]
     }
@@ -277,13 +277,12 @@ resource "null_resource" "configure-prometheus" {
             cluster   = "cluster1"
             dc        = "us-east-2"
         })
-        destination = "scylla-monitoring-branch-3.6/prometheus/scylla_servers.yml"
+        destination = "scylla-monitoring-scylla-monitoring-3.6.3/prometheus/scylla_servers.yml"
     }
 
     provisioner "remote-exec" {
         inline = [
-            "touch has_run",
-            "cd scylla-monitoring-branch-3.6",
+            "cd scylla-monitoring-scylla-monitoring-3.6.3",
             "./kill-all.sh",
             "./start-all.sh",
         ]
