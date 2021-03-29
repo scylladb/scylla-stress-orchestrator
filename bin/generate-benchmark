@@ -1,0 +1,29 @@
+#!/bin/python3
+
+import os
+import sys
+import shutil
+
+sso_dir=os.environ['SSO']
+template_dir=os.path.join(sso_dir,"template")
+bin_dir=os.path.join(sso_dir,"bin")
+sys.path.insert(1, f"{sso_dir}/src/")
+
+if len(sys.argv)!=2:
+    print("Expected 1 argument")
+    exit(1)
+
+dir_name=sys.argv[1]
+cwd=os.getcwd()
+target_dir=os.path.join(cwd, dir_name)
+
+if os.path.exists(target_dir):
+    print(f"Can't generate benchmark: dir/file [{target_dir}] already exists")
+    exit(1)
+
+
+shutil.copytree(template_dir, target_dir)
+os.chdir(target_dir)
+os.system(f"{bin_dir}/make_key")
+os.chdir(cwd)
+

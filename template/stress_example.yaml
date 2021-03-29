@@ -1,0 +1,51 @@
+### DML ###
+
+# Keyspace Name
+keyspace: bonkers
+
+# The CQL for creating a keyspace (optional if it already exists)
+keyspace_definition: |
+  CREATE KEYSPACE bonkers WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};
+# Table name
+table: clothes
+
+# The CQL for creating a table you wish to stress (optional if it already exists)
+table_definition: |
+  CREATE TABLE clothes (
+        title text,
+        size int,
+        published_date timeuuid,
+        color text,
+        material text,
+        PRIMARY KEY(title)
+  ) WITH  comment='A table to hold clothes'
+### Column Distribution Specifications ###
+ 
+columnspec:
+
+  - name: title
+    size: uniform(5..10)       #title names are relatively short
+
+  - name: size
+    cluster: fixed(1)         #under each size we will have max 1 clothes
+
+  - name: publish_date
+    size: uniform(30..300)       
+
+  - name: title                  #titles shouldn't go beyond 200 chars
+    size: gaussian(10..200)
+
+### Batch Ratio Distribution Specifications ###
+
+insert:
+  partitions: fixed(1)            # Our partition key is the domain so only insert one per batch
+  select:    fixed(1)/200        
+  batchtype: UNLOGGED             # Unlogged batches
+
+#
+# A list of queries you wish to run against the schema
+#
+queries:
+   singleclothes:
+      cql: select * from clothes where title = ?
+      fields: samerow
