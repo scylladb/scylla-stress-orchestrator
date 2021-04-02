@@ -22,7 +22,7 @@ class CassandraStress:
         ssh = self.__new_ssh(ip)
         ssh.update()
         if self.scylla_tools:
-            print(f'    [{ip}] Instaling cassandra-stress (Scylla): started')
+            print(f'    [{ip}] Installing cassandra-stress (Scylla): started')
             ssh.exec(f"""
                 set -e
                 if hash apt-get 2>/dev/null; then
@@ -41,7 +41,7 @@ class CassandraStress:
                 fi
                 """)
         else:
-            print(f'    [{ip}] Instaling cassandra-stress (Cassandra): started')
+            print(f'    [{ip}] Installing cassandra-stress (Cassandra): started')
             ssh.install_one('openjdk-8-jdk', 'java-1.8.0-openjdk')
             ssh.install('wget')
             ssh.exec(f"""
@@ -50,12 +50,12 @@ class CassandraStress:
                 tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz
             """)
 
-        print(f'    [{ip}] Instaling cassandra-stress: done')
+        print(f'    [{ip}] Installing cassandra-stress: done')
 
     def install(self):
-        print("============== Instaling Cassandra-Stress: started =================")
+        print("============== Installing Cassandra-Stress: started =================")
         run_parallel(self.__install, [(ip,) for ip in self.load_ips])
-        print("============== Instaling Cassandra-Stress: done =================")
+        print("============== Installing Cassandra-Stress: done =================")
 
     def __stress(self, ip, cmd):
         if self.scylla_tools:
@@ -64,7 +64,9 @@ class CassandraStress:
             cassandra_stress_dir = f'apache-cassandra-{self.cassandra_version}/tools/bin'
             full_cmd = f'{cassandra_stress_dir}/cassandra-stress {cmd}'
         print(full_cmd)
+        print(f"{ip} {full_cmd} started-------------------------------------------------------------------------")
         self.__new_ssh(ip).exec(full_cmd)
+        print(f"{ip} {full_cmd} finshed-------------------------------------------------------------------------")
 
     def stress(self, command, load_index=None):
         if load_index is None:
@@ -99,9 +101,11 @@ class CassandraStress:
             end = end + per_load_generator
 
         futures = []
-        for i in range(0, len(self.load_ips)):   
+        for i in range(0, len(self.load_ips)):                           
             f = self.async_stress(cmd_list[i], load_index=i)
-            futures.append(f)
+            futures.append(f)            
+            if i == 0:
+                time.sleep(10)
          
         for f in futures:
             f.join()

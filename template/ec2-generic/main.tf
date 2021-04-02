@@ -103,11 +103,12 @@ resource "aws_security_group" "cluster-sg" {
 }
 
 resource "aws_instance" "cluster" {
-    key_name        = aws_key_pair.keypair.key_name
-    ami             = var.scylla_ami
-    instance_type   = var.cluster_instance_type
-    count           = var.cluster_size
-
+    key_name            = aws_key_pair.keypair.key_name
+    ami                 = var.scylla_ami
+    instance_type       = var.cluster_instance_type
+    count               = var.cluster_size
+    availability_zone   = var.availability_zone
+    
     tags = {
         Name  = var.cluster_name
         Owner = var.owner
@@ -218,11 +219,12 @@ resource "aws_security_group" "prometheus-sg" {
 }
 
 resource "aws_instance" "prometheus" {
-    key_name        = aws_key_pair.keypair.key_name
-    ami             = var.prometheus_ami
-    instance_type   = var.prometheus_instance_type
-    count           = 1
-
+    key_name            = aws_key_pair.keypair.key_name
+    ami                 = var.prometheus_ami
+    instance_type       = var.prometheus_instance_type
+    count               = 1
+    availability_zone   = var.availability_zone
+    
     tags = {
         Name = "prometheus ${var.owner}",
         Owner = var.owner
@@ -325,11 +327,12 @@ resource "aws_security_group" "loadgenerator-sg" {
 }
 
 resource "aws_instance" "loadgenerator" {
-    key_name          = aws_key_pair.keypair.key_name
-    ami               = var.loadgenerator_ami
-    instance_type     = var.loadgenerator_instance_type
-    count             = var.loadgenerator_size
-
+    key_name            = aws_key_pair.keypair.key_name
+    ami                 = var.loadgenerator_ami
+    instance_type       = var.loadgenerator_instance_type
+    count               = var.loadgenerator_size
+    availability_zone   = var.availability_zone
+    
     tags = {
         Name = "load generator ${var.owner}",
         Owner = var.owner
