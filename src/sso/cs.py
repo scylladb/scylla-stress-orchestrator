@@ -1,7 +1,7 @@
 import os
 import time
 
-from sso.hdr import HdrLogMerger, HdrLogProcessor
+from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
 from sso.util import run_parallel, WorkerThread
 
@@ -76,43 +76,43 @@ class CassandraStress:
         else:
             print("using load_index " + str(load_index))
             self.__stress(self.load_ips[load_index], command)
-        
+
     def async_stress(self, command, load_index=None):
         thread = WorkerThread(self.stress, (command, load_index))
         thread.start()
         return thread.future
 
-    def insert(self, profile, item_count, nodes, mode = "native cql3", rate="threads=700", sequence_start=None):                
+    def insert(self, profile, item_count, nodes, mode="native cql3", rate="threads=700", sequence_start=None):
         print(f"============== Inserting {item_count} items ===========================")
         start_seconds = time.time()
-        
+
         per_load_generator = item_count // len(self.load_ips)
         start = sequence_start
         if sequence_start is None:
             start = 1
-        
-        end = start + per_load_generator -1
+
+        end = start + per_load_generator - 1
         cmd_list = []
         for i in range(0, len(self.load_ips)):
             cmd = f'user profile={profile} "ops(insert=1)" n={per_load_generator} no-warmup -pop seq={start}..{end} -mode {mode} -rate {rate}  -node {nodes}'
-            print(self.load_ips[i]+" "+cmd)
+            print(self.load_ips[i] + " " + cmd)
             cmd_list.append(cmd)
             start = end + 1
             end = end + per_load_generator
 
         futures = []
-        for i in range(0, len(self.load_ips)):                           
+        for i in range(0, len(self.load_ips)):
             f = self.async_stress(cmd_list[i], load_index=i)
-            futures.append(f)            
+            futures.append(f)
             if i == 0:
                 time.sleep(10)
-         
+
         for f in futures:
             f.join()
-        
-        duration_seconds = time.time()-start_seconds
+
+        duration_seconds = time.time() - start_seconds
         print(f"Duration : {duration_seconds} seconds")
-        print(f"Insertion rate: {item_count//duration_seconds} items/second")
+        print(f"Insertion rate: {item_count // duration_seconds} items/second")
         print(f"============== Inserting {item_count} items: done =======================")
 
     def __ssh(self, ip, command):
@@ -136,11 +136,27 @@ class CassandraStress:
         self.__new_ssh(ip).scp_from_remote(f'*.{{html,hdr}}', dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
-    def collect_results(self, dir):
+    def collect_results(self, dir, warmup_seconds=None, cooldown_seconds=None):
+        """
+        Parameters
+        ----------
+        dir: str
+            The download directory.
+        warmup_seconds : str
+            The warmup period in seconds. If the value is set, additional files will 
+            be created where the warmup period is trimmed.
+        cooldown_seconds : str
+            The cooldown period in seconds. If the value is set, additional files will 
+            be created where the cooldown period is trimmed.            
+        """
+
         print("============== Getting results: started ===========================")
         run_parallel(self.__download, [(ip, dir) for ip in self.load_ips])
-        HdrLogMerger(self.properties).merge(dir)
-        HdrLogProcessor(self.properties).process(dir)
+        hdrLogProcessor = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
+        hdrLogProcessor.trim_recursivly(dir)
+        hdrLogProcessor.merge_recursivly(dir)
+        hdrLogProcessor.process_recursivly(dir)
+        hdrLogProcessor.summarize_recursivly(dir)        
         print("============== Getting results: done ==============================")
 
     def __prepare(self, ip):

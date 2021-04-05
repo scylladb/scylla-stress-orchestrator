@@ -1,15 +1,56 @@
 import os
-import subprocess 
 import glob
 import csv
 
-class HdrLogMerger:
-    
-    def __init__(self, properties):
-        self.properties = properties        
 
-    def merge(self, dir):
-        print("------------------ HdrLogMerger -------------------------------------")
+class HdrLogProcessor:
+    
+    def __init__(self, properties, warmup_seconds=None, cooldown_seconds=None):
+        self.properties = properties
+        self.warmup_seconds = warmup_seconds
+        self.cooldown_seconds = cooldown_seconds
+
+    def __trim(self, file):
+        filename = os.path.basename(file)
+        filename_no_ext = os.path.splitext(filename)[0]
+        jvm_path = self.properties['jvm_path']
+        dir = os.path.dirname(os.path.realpath(file))
+        
+        old_cwd = os.getcwd()
+        new_cwd = os.path.dirname(os.path.realpath(file))
+        os.chdir(new_cwd)
+  
+        lib_dir=f"{os.environ['SSO']}/lib/"     
+        args = f'union -if {filename} -of trimmed_{filename_no_ext}.hdr'        
+        if self.warmup_seconds is not None:
+            args = f'{args} -start {self.warmup_seconds}'
+        if self.cooldown_seconds is not None:
+            args = f'{args} -end {self.cooldown_seconds}'
+            
+        cmd = f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain {args}'
+        print(cmd)
+        os.system(cmd)
+        os.chdir(old_cwd)
+        
+    def trim_recursivly(self, dir):
+        if self.warmup_seconds is None and self.warmup_seconds is None:
+            return
+        
+        print("------------------ HdrLogProcessor.trim_recursivly -------------------------------------")       
+        
+        for hdr_file in glob.iglob(dir + '/*/*.hdr', recursive=True):
+            filename = os.path.basename(hdr_file)
+            if filename.startswith("trimmed_"):
+                continue
+            
+            print(hdr_file)
+            self.__trim(hdr_file)
+        
+        print("------------------ HdrLogProcessor.trim_recursivly -------------------------------------")
+     
+
+    def merge_recursivly(self, dir):
+        print("------------------ HdrLogProcessor.merge_recursivly -------------------------------------")
         print(dir)
         # todo be careful with merging the merge file.
         files_map = {}
@@ -24,7 +65,6 @@ class HdrLogMerger:
             files.append(hdr_file)
 
         lib_dir=f"{os.environ['SSO']}/lib/"    
-        cwd = os.getcwd()
         jvm_path = self.properties['jvm_path']
         for name, files in files_map.items():
             input = ""
@@ -34,22 +74,29 @@ class HdrLogMerger:
             print(cmd)
             os.system(cmd)
 
-        print("------------------ HdrLogMerger -------------------------------------")
+        print("------------------ HdrLogProcessor.merge_recursivly -------------------------------------")
 
+    def __summarize(self, file):
+        filename = os.path.basename(file)
+        filename_no_ext = os.path.splitext(filename)[0]
+        jvm_path = self.properties['jvm_path']
+        old_cwd = os.getcwd()
+        new_cwd = os.path.dirname(os.path.realpath(file))
+        os.chdir(new_cwd)
 
-class HdrLogProcessor:
-    
-    def __init__(self, properties):
-        self.properties = properties
-
-    def process(self, dir):
-        print("process " + str(dir))
+        lib_dir=f"{os.environ['SSO']}/lib/"     
+        args = f'-if {filename_no_ext}.hdr'        
+        os.system(f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain summarize {args} >  {filename_no_ext}-summary.txt')
+        os.chdir(old_cwd)
+        
+    def summarize_recursivly(self, dir):       
+        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")
         for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
             print(hdr_file)
-            self.__process(hdr_file)
+            self.__summarize(hdr_file)
+        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")
 
     def __process(self, file):
-        print("------------------ HdrLogProcessor -------------------------------------")
         filename = os.path.basename(file)
         filename_no_ext = os.path.splitext(filename)[0]
         jvm_path = self.properties['jvm_path']
@@ -69,13 +116,27 @@ class HdrLogProcessor:
                 tags.add(tag)
 
         lib_dir=f"{os.environ['SSO']}/lib/"
-        print("lib dir = "+lib_dir)
         for tag in tags:
-            os.system(
-                f'{jvm_path}/bin/java -cp {lib_dir}/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor -i {filename} -o {filename_no_ext + "_" + tag} -csv -tag {tag}')
+            # process twice; once to get the csv formatted output and again for the non csv output.
+            logprocessor = f'{jvm_path}/bin/java -cp {lib_dir}/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor'
+            args = f'-i {filename} -o {filename_no_ext + "_" + tag} -tag {tag} -csv'
+            os.system(f'{logprocessor} {args}')
+            os.rename(f'{filename_no_ext + "_" + tag}.hgrm', f'{filename_no_ext + "_" + tag}.hgrm.csv')
+            
+            args = f'-i {filename} -o {filename_no_ext + "_" + tag} -tag {tag}'
+            os.system(f'{logprocessor} {args}')
 
-        os.system(
-            f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain summarize -if {filename_no_ext}.hdr >  {filename_no_ext}-summary.txt')
 
         os.chdir(old_cwd)
-        print("------------------ HdrLogProcessor -------------------------------------")
+
+    def process_recursivly(self, dir):
+        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")       
+        print("process " + str(dir))
+        
+        for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
+            print(hdr_file)
+            self.__process(hdr_file)
+        
+        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")
+       
+   

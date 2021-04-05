@@ -7,7 +7,7 @@ variable "region" {
 }
  
 variable "keypair_name" {
-    default = "pveentjer"
+    default = "sso.pveentjer"
 }
 
 variable "public_key_location" {
@@ -29,7 +29,7 @@ variable "cluster_instance_type" {
 }
 
 variable "cluster_name" {
-    default = "cluster pveentjer"
+    default = "sso.cluster pveentjer"
 }
 
 variable "cluster_user" {

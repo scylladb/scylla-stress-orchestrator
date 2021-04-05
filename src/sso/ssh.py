@@ -83,29 +83,13 @@ class SSH:
 
     def __scp(self, cmd):
         self.__wait_for_connect()
-        # we need to retry under certain conditions
-        # for attempt in range(1, self.max_attempts):
-        #    if self.log_ssh or attempt > 1:
-        #        print(f'[{attempt}] {cmd}')
         exitcode = subprocess.call(cmd, shell=True)
-        #    if exitcode == 0:
-        #        return
-        #    elif exitcode in [4, 65, 255]:            
-        #        # 4 is connection failed
-        #        # 65 is host not allowed to connect.
-        #        time.sleep(5)
-        #        continue
-        #    else:
-        #        raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
-        #    
         # raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
 
     def exec(self, command):
         self.__wait_for_connect()
 
         cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
-
-        # we need to retry under certain conditions
         exitcode = subprocess.call(cmd, shell=True)
         if exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
             return
