@@ -2,6 +2,10 @@ variable "owner" {
     default = "peter.veentjer@scylladb.com"
 }
 
+variable "placement_group_name" {
+    default = "sso-pveentjer-pg"
+}
+
 variable "region" {
     default = "us-east-2"
 }
@@ -25,7 +29,7 @@ variable "cluster_size" {
 }
 
 variable "cluster_instance_type" {
-    default = "c5.2xlarge"
+    default = "i3.2xlarge"
 }
 
 variable "cluster_name" {

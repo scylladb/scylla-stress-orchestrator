@@ -4,6 +4,7 @@ import time
 from sso.util import run_parallel
 
 
+# Parallel SSH
 class PSSH:
 
     def __init__(self, ip_list, user, ssh_options, wait_for_connect=True, silent_seconds=30):

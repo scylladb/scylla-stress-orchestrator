@@ -9,6 +9,11 @@ resource "aws_key_pair" "keypair" {
     public_key = file(var.public_key_location)
 }
 
+#resource "aws_placement_group" "cluster-pg" {
+#  name     = var.placement_group_name
+#  strategy = "cluster"
+#}
+
 # ==========cluster ==========================
 
 resource "aws_security_group" "cluster-sg" {
@@ -107,7 +112,7 @@ resource "aws_instance" "cluster" {
     ami                 = var.scylla_ami
     instance_type       = var.cluster_instance_type
     count               = var.cluster_size
-    availability_zone   = var.availability_zone
+#   availability_zone   = var.availability_zone
     
     tags = {
         Name  = var.cluster_name
@@ -223,7 +228,7 @@ resource "aws_instance" "prometheus" {
     ami                 = var.prometheus_ami
     instance_type       = var.prometheus_instance_type
     count               = 1
-    availability_zone   = var.availability_zone
+#    availability_zone   = var.availability_zone
     
     tags = {
         Name = "prometheus ${var.owner}",
@@ -331,7 +336,7 @@ resource "aws_instance" "loadgenerator" {
     ami                 = var.loadgenerator_ami
     instance_type       = var.loadgenerator_instance_type
     count               = var.loadgenerator_size
-    availability_zone   = var.availability_zone
+#    availability_zone   = var.availability_zone
     
     tags = {
         Name = "load generator ${var.owner}",
