@@ -1,6 +1,7 @@
 import os
 import time
 
+from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
 from sso.util import run_parallel, WorkerThread
@@ -63,6 +64,9 @@ class CassandraStress:
         else:
             cassandra_stress_dir = f'apache-cassandra-{self.cassandra_version}/tools/bin'
             full_cmd = f'{cassandra_stress_dir}/cassandra-stress {cmd}'
+            
+        dt=datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        full_cmd = full_cmd + f" 2>&1 | tee -a cassandra-stress-{dt}.log"    
         print(full_cmd)
         print(f"{ip} {full_cmd} started-------------------------------------------------------------------------")
         self.__new_ssh(ip).exec(full_cmd)
@@ -133,7 +137,7 @@ class CassandraStress:
         dest_dir = os.path.join(dir, ip)
         os.makedirs(dest_dir, exist_ok=True)
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        self.__new_ssh(ip).scp_from_remote(f'*.{{html,hdr}}', dest_dir)
+        self.__new_ssh(ip).scp_from_remote(f'*.{{html,hdr,log}}', dest_dir)
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
     def collect_results(self, dir, warmup_seconds=None, cooldown_seconds=None):
@@ -162,7 +166,7 @@ class CassandraStress:
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
         ssh = self.__new_ssh(ip)
-        ssh.exec(f'rm -fr *.html *.hdr')
+        ssh.exec(f'rm -fr *.html *.hdr *.log')
         # we need to make sure that the no old load generator is still running.
         ssh.exec(f'killall -q -9 java')
         print(f'    [{ip}] Preparing: done')
