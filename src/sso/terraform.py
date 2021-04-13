@@ -4,6 +4,8 @@ import subprocess
 
 import yaml
 
+from os import path
+
 
 def apply(terraform_plan, options=None):
     option_str = "" 
@@ -12,6 +14,10 @@ def apply(terraform_plan, options=None):
         
     print(f'Using terraform_plan [{terraform_plan}]')
     
+    if not path.isdir(terraform_plan):
+        print(f"Could not find directory [{terraform_plan}]")
+        exit(1)
+
     cmd = f'terraform -chdir={terraform_plan} init'
     print(cmd)
     exitcode = subprocess.call(cmd, shell=True)
@@ -29,6 +35,10 @@ def apply(terraform_plan, options=None):
 
 def destroy(terraform_plan, options=None):
     print(f'Using terraform_plan [{terraform_plan}]')
+    if not path.isdir(terraform_plan):
+        print(f"Could not find directory [{terraform_plan}]")
+        exit(1)
+   
     option_str = "" 
     if options:
         option_str = options
