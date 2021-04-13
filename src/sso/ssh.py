@@ -25,6 +25,11 @@ class PSSH:
     def exec(self, cmd):
         run_parallel(self.__exec, [(ip, cmd) for ip in self.ip_list])
 
+    def async_exec(self, command):
+        thread = WorkerThread(self.exec, (command))
+        thread.start()
+        return thread.future
+
     def __update(self, ip):
         self.__new_ssh(ip).update()
 
@@ -32,18 +37,30 @@ class PSSH:
         run_parallel(self.__update, [ip for ip in self.ip_list])
 
     def __install_one(self, ip, *packages):
-        self.__new_ssh(ip).install_one(packages)
+        self.__new_ssh(ip).install_one(*packages)
 
     def install_one(self, *packages):
-        run_parallel(self.__install_one, [(ip, packages) for ip in self.ip_list])
+        run_parallel(self.__install_one, [(ip, *packages) for ip in self.ip_list])
 
     def __install(self, ip, *packages):
-        self.__new_ssh(ip).install(packages)
+        self.__new_ssh(ip).install(*packages)
 
     def install(self, *packages):
-        run_parallel(self.__install, [(ip, packages) for ip in self.ip_list])
+        run_parallel(self.__install, [(ip, *packages) for ip in self.ip_list])
 
+    def __scp_from_remote(self, src, dst_dir, ip):
+        self.__new_ssh(ip).scp_from_remote(src,  os.path.join(dst_dir, ip))
 
+    def scp_from_remote(self, src, dst_dir):
+        run_parallel(self.__scp_from_remote, [(src, dst_dir, ip) for ip in self.ip_list])
+
+    def __scp_to_remote(self, src, dst, ip):
+         self.__new_ssh(ip).scp_to_remote(src, dst)
+         
+    def scp_to_remote(self, src, dst):
+        run_parallel(self.__scp_to_remote, [(src, dst, ip) for ip in self.ip_list])
+
+  
 class SSH:
 
     def __init__(self, ip, user, ssh_options, wait_for_connect=True, silent_seconds=30):
@@ -74,8 +91,9 @@ class SSH:
 
         raise Exception(f"Failed to connect to {self.ip}, exitcode={exitcode}")
 
-    def scp_from_remote(self, src, dst):
-        cmd = f'scp {self.ssh_options} -q {self.user}@{self.ip}:{src} {dst}'
+    def scp_from_remote(self, src, dst_dir):
+        os.makedirs(dst_dir, exist_ok=True)
+        cmd = f'scp {self.ssh_options} -q {self.user}@{self.ip}:{src} {dst_dir}'
         self.__scp(cmd)
 
     def scp_to_remote(self, src, dst):
@@ -96,6 +114,11 @@ class SSH:
             return
         else:
             raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
+
+    def async_exec(self, command):
+        thread = WorkerThread(self.exec, (command))
+        thread.start()
+        return thread.future
 
     def update(self):
         print(f'    [{self.ip}] Update: started')
