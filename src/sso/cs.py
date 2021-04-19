@@ -137,7 +137,9 @@ class CassandraStress:
         dest_dir = os.path.join(dir, ip)
         os.makedirs(dest_dir, exist_ok=True)
         print(f'    [{ip}] Downloading to [{dest_dir}]')
-        self.__new_ssh(ip).scp_from_remote(f'*.{{html,hdr,log}}', dest_dir)
+        self.__new_ssh(ip)
+        ssh.scp_from_remote(f'*.{{html,hdr,log}}', dest_dir)
+        ssh.exec(f'rm -fr *.html *.hdr *.log')
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
     def collect_results(self, dir, warmup_seconds=None, cooldown_seconds=None):
@@ -166,7 +168,6 @@ class CassandraStress:
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
         ssh = self.__new_ssh(ip)
-        ssh.exec(f'rm -fr *.html *.hdr *.log')
         # we need to make sure that the no old load generator is still running.
         ssh.exec(f'killall -q -9 java')
         print(f'    [{ip}] Preparing: done')
