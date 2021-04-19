@@ -35,6 +35,7 @@ def apply(terraform_plan, options=None):
 
 def destroy(terraform_plan, options=None):
     print(f'Using terraform_plan [{terraform_plan}]')
+    
     if not path.isdir(terraform_plan):
         print(f"Could not find directory [{terraform_plan}]")
         exit(1)

@@ -26,10 +26,13 @@ cs.prepare()
 
 cs.upload("stress_example.yaml")
 
-# insert data
-cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" n=1m -mode native cql3 -rate threads=50 -node {cluster_string}')  
 
+items = 10_000_000
+
+# insert the data.
+cs.insert("stress_example.yaml", items, cluster_string)
+ 
 # actual work
-cs.stress(f'user profile=./stress_example.yaml "ops(singleclothes=1, insert=1)" n=10m -log hdrfile=profile.hdr -graph file=profile.html title=store revision=benchmark-0 -mode native cql3 -rate threads=50 -node {cluster_string}')  
+cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration=2m -pop seq=1..{items} -mode native cql3 -rate threads=200 -node {cluster_string}')  
 
 cs.collect_results(iteration.dir)

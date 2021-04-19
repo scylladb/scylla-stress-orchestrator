@@ -1,9 +1,9 @@
 variable "owner" {
-    default = "peter.veentjer@scylladb.com"
+    default = "sso.<name>"
 }
 
 variable "placement_group_name" {
-    default = "sso-pveentjer-pg"
+    default = "sso-<name>-pg"
 }
 
 variable "region" {
@@ -11,7 +11,7 @@ variable "region" {
 }
  
 variable "keypair_name" {
-    default = "sso.pveentjer"
+    default = "sso.<name>"
 }
 
 variable "public_key_location" {
@@ -33,7 +33,7 @@ variable "cluster_instance_type" {
 }
 
 variable "cluster_name" {
-    default = "sso.cluster pveentjer"
+    default = "sso.cluster <name>"
 }
 
 variable "cluster_user" {

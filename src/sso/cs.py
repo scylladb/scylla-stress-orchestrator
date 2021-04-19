@@ -86,7 +86,7 @@ class CassandraStress:
         thread.start()
         return thread.future
 
-    def insert(self, profile, item_count, nodes, mode="native cql3", rate="threads=700", sequence_start=None):
+    def insert(self, profile, item_count, nodes, mode="native cql3", rate="threads=100", sequence_start=None):
         print(f"============== Inserting {item_count} items ===========================")
         start_seconds = time.time()
 

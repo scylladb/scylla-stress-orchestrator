@@ -93,11 +93,11 @@ class SSH:
 
     def scp_from_remote(self, src, dst_dir):
         os.makedirs(dst_dir, exist_ok=True)
-        cmd = f'scp {self.ssh_options} -q {self.user}@{self.ip}:{src} {dst_dir}'
+        cmd = f'scp {self.ssh_options} -r -q {self.user}@{self.ip}:{src} {dst_dir}'
         self.__scp(cmd)
 
     def scp_to_remote(self, src, dst):
-        cmd = f'scp {self.ssh_options} -q {src} {self.user}@{self.ip}:{dst}'
+        cmd = f'scp {self.ssh_options} -r -q {src} {self.user}@{self.ip}:{dst}'
         self.__scp(cmd)
 
     def __scp(self, cmd):
