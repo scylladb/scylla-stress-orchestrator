@@ -156,14 +156,14 @@ class CassandraStress:
             be created where the cooldown period is trimmed.            
         """
 
-        print("============== Getting results: started ===========================")
+        print("============== Collecting results: started ===========================")
         run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
         p = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
         p.trim_recursivly(dir)
         p.merge_recursivly(dir)
         p.process_recursivly(dir)
         p.summarize_recursivly(dir)        
-        print("============== Getting results: done ==============================")
+        print("============== Collecting results: done ==============================")
 
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
