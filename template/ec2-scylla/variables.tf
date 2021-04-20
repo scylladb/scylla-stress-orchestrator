@@ -3,7 +3,7 @@ variable "owner" {
 }
 
 variable "placement_group_name" {
-    default = "sso-<name>-pg"
+    default = "sso.pg-<name>"
 }
 
 variable "region" {
@@ -11,7 +11,7 @@ variable "region" {
 }
  
 variable "keypair_name" {
-    default = "sso.<name>"
+    default = "sso.keypair-<name>"
 }
 
 variable "public_key_location" {
@@ -22,10 +22,14 @@ variable "private_key_location" {
     default = "../key"
 }
 
-# ============ cluster ===============
+# ============ Scylla Cluster ===============
 
 variable "cluster_size" {
     default = "1"
+}
+
+variable "cluster_sg_name" {
+    default = "sso.cluster-sg-<name>"
 }
 
 variable "cluster_instance_type" {
@@ -33,7 +37,7 @@ variable "cluster_instance_type" {
 }
 
 variable "cluster_name" {
-    default = "sso.cluster <name>"
+    default = "sso.cluster-<name>"
 }
 
 variable "cluster_user" {
@@ -46,7 +50,15 @@ variable "scylla_ami" {
 }
 
 
-# ============ prometheus instance ===============
+# ============ Prometheus instance ===============
+
+variable "prometheus_name" {
+    default = "sso.prometheus-<name>"
+}
+
+variable "prometheus_sg_name" {
+    default = "sso.prometheus-sg-<name>"
+}
 
 variable "prometheus_instance_type" {
     default = "c5.xlarge"
@@ -57,10 +69,18 @@ variable "prometheus_ami" {
     default = "ami-0dd9f0e7df0f0a138"
 }
 
-# ============ prometheus instance ===============
+# ============ Load Generators  ===============
 
 variable "loadgenerator_instance_type" {
     default = "c5.4xlarge"
+}
+
+variable "loadgenerator_name" {
+    default = "sso.loadgenerator-<name>"
+}
+
+variable "loadgenerator_sg_name" {
+    default = "sso.loadgenerator-sg-<name>"
 }
 
 variable "loadgenerator_size" {

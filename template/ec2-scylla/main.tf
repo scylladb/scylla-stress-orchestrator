@@ -17,7 +17,7 @@ resource "aws_key_pair" "keypair" {
 # ==========cluster ==========================
 
 resource "aws_security_group" "cluster-sg" {
-    name        = "cluster-sg"
+    name        = var.cluster_sg_name
     description = "Security group for the cluster"
 
     # list of ports https://docs.scylladb.com/operating-scylla/admin/
@@ -175,7 +175,7 @@ output "cluster_private_ips" {
 # ========== prometheus ==========================
 
 resource "aws_security_group" "prometheus-sg" {
-    name        = "prometheus-sg"
+    name        = var.prometheus_sg_name
     description = "Security group for Prometheus"
 
     ingress {
@@ -231,7 +231,7 @@ resource "aws_instance" "prometheus" {
 #    availability_zone   = var.availability_zone
     
     tags = {
-        Name = "prometheus ${var.owner}",
+        Name =  var.prometheus_name
         Owner = var.owner
     }
 
@@ -299,7 +299,7 @@ resource "null_resource" "configure-prometheus" {
 # ========== load generator ==========================
 
 resource "aws_security_group" "loadgenerator-sg" {
-    name        = "loadgenerator-sg"
+    name        = var.loadgenerator_sg_name
     description = "Security group for the loadgenerator"
 
     ingress {
@@ -339,7 +339,7 @@ resource "aws_instance" "loadgenerator" {
 #    availability_zone   = var.availability_zone
     
     tags = {
-        Name = "load generator ${var.owner}",
+        Name  = var.loadgenerator_name,
         Owner = var.owner
     }
 
