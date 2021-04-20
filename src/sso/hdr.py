@@ -131,12 +131,8 @@ class HdrLogProcessor:
 
     def process_recursivly(self, dir):
         print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")       
-        print("process " + str(dir))
-        
         for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
             print(hdr_file)
             self.__process(hdr_file)
-        
         print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")
        
-   
