@@ -133,14 +133,14 @@ class CassandraStress:
         run_parallel(self.__upload, [(ip, file) for ip in self.load_ips])
         print("============== Upload: done ==============================")
 
-    def __download(self, ip, dir):
+    def __collect(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
         os.makedirs(dest_dir, exist_ok=True)
-        print(f'    [{ip}] Downloading to [{dest_dir}]')
-        self.__new_ssh(ip)
+        print(f'    [{ip}] Collecting to [{dest_dir}]')
+        ssh = self.__new_ssh(ip)
         ssh.scp_from_remote(f'*.{{html,hdr,log}}', dest_dir)
         ssh.exec(f'rm -fr *.html *.hdr *.log')
-        print(f'    [{ip}] Downloading to [{dest_dir}] done')
+        print(f'    [{ip}] Collecting to [{dest_dir}] done')
 
     def collect_results(self, dir, warmup_seconds=None, cooldown_seconds=None):
         """
@@ -157,12 +157,12 @@ class CassandraStress:
         """
 
         print("============== Getting results: started ===========================")
-        run_parallel(self.__download, [(ip, dir) for ip in self.load_ips])
-        hdrLogProcessor = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
-        hdrLogProcessor.trim_recursivly(dir)
-        hdrLogProcessor.merge_recursivly(dir)
-        hdrLogProcessor.process_recursivly(dir)
-        hdrLogProcessor.summarize_recursivly(dir)        
+        run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
+        p = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
+        p.trim_recursivly(dir)
+        p.merge_recursivly(dir)
+        p.process_recursivly(dir)
+        p.summarize_recursivly(dir)        
         print("============== Getting results: done ==============================")
 
     def __prepare(self, ip):

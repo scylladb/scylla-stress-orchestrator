@@ -34,8 +34,7 @@ username=getpass.getuser()
 for subdir, dirs, files in os.walk(target_dir):
     for filename in files:
         filepath = subdir + os.sep + filename
-        if os.access(filepath, os.W_OK):
-    
+        if os.access(filepath, os.W_OK):    
             f = open(filepath,'r')
             filedata = f.read()
             f.close()
