@@ -1,6 +1,7 @@
 import os
 import yaml
 import subprocess
+import time
 from datetime import datetime
 from sso.ssh import SSH
 from sso.util import run_parallel
@@ -21,13 +22,16 @@ class Iteration:
         self.trial_name = trial_name
         self.trial_dir = os.path.join(self.trials_dir, trial_name)
 
-        self.name = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        if experimental:
-            self.name = self.name + "_experimental"
-        self.dir = os.path.join(self.trial_dir, self.name)
-
-        os.makedirs(self.dir)
-
+        while True:
+            self.name = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+            if experimental:
+                self.name = self.name + "_experimental"
+            self.dir = os.path.join(self.trial_dir, self.name)
+            if not os.path.exists(self.dir):
+                os.makedirs(self.dir)
+                break
+            time.sleep(0.5)
+           
         if description:
             desc_file = os.path.join(self.dir, "description.txt")
             with open(desc_file, "w") as text_file:
@@ -47,11 +51,11 @@ class Iteration:
             if not experimental:
                 d = subprocess.check_output(" [[ -z $(git status -s) ]] || echo 'dirty'", shell=True).decode()
                 if d.startswith("dirty"):
-                    print("FAIL: The current working directory is dirty, so can't store the git commit in the trial directory.")
+                    print("The current working directory is dirty, so can't store the git commit in the trial directory.")
                     exit(1)
             
             output = subprocess.check_output("git log --pretty=format:'%h' -n 1", shell=True).decode()
-            git_file = os.path.join(self.dir, "git.txt")
+            git_file = os.path.join(self.dir, "HEAD")
             with open(git_file, "w") as git_file:
                 print(output, file=git_file)
 
