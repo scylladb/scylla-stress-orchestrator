@@ -51,7 +51,7 @@ class Iteration:
             if not experimental:
                 d = subprocess.check_output(" [[ -z $(git status -s) ]] || echo 'dirty'", shell=True).decode()
                 if d.startswith("dirty"):
-                    print("The current working directory is dirty, so can't store the git commit in the trial directory.")
+                    print("The current working directory is dirty, so can't store the git HEAD in the iteration directory.")
                     exit(1)
             
             output = subprocess.check_output("git log --pretty=format:'%h' -n 1", shell=True).decode()
