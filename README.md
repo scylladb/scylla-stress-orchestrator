@@ -16,7 +16,7 @@ Scylla Stress Orchestrator requires the following tools to be installed:
 Check out the following github project
 
 ```
-git clone git@github.com:pveentjer/scylla-stress-orchestrator.git
+git clone git@github.com:scylladb/scylla-stress-orchestrator.git
 ```
 
 Set the enviroment SSO variable in e.g. your ~/.bash_profile or ~/./profile
