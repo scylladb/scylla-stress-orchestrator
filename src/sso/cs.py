@@ -164,7 +164,8 @@ class CassandraStress:
         p.process_recursivly(dir)
         p.summarize_recursivly(dir)        
         print("============== Collecting results: done ==============================")
-
+        print(f"Results can be found in [{dir}]")
+     
     def __prepare(self, ip):
         print(f'    [{ip}] Preparing: started')
         ssh = self.__new_ssh(ip)

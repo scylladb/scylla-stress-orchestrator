@@ -73,3 +73,5 @@ class DiskExplorer:
         print("============== Disk Explorer Download: started ===========================")
         run_parallel(self.__download, [(ip, dir) for ip in self.ips])
         print("============== Disk Explorer Download: done ===========================")
+        print(f"Results can be found in [{dir}]")
+     

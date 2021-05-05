@@ -1,28 +1,27 @@
-Before you provision the environment, have a look at the 
+Before you provision the environment, have a look at the the following file:
 
-ec2-generic/variables.tf
+ec2-scylla/variables.tf
 
-and modify the variables.
+And modify the variables like the machine types etc.
 
-To provisioner the environment:
-
-provision-terraform
-
-This will create the Scylla nodes, Scylla monitor and load generator machines.
-
-The actual benchmark is in the 'benchmark.py'. Have a look at it and play 
-with the cassandra-stress settings.
-
-To run the benchmark:
+To run the benchmark execute the following:
 
 ./benchmark.py
+
+The first time this script is called, it will create the following EC2 resources:
+- security groups
+- keypair
+- the Scylla machine(s)
+- Scylla monitor machine
+- load generator machine(s).
 
 After the benchmark completes, you can find the results in the following directory:
 
 trials/dummy-benchmark/
 
-After you are finished with benchmarks, you need to determine the environment using:
+After you are finished with running your benchmark, you can destroy the environment using:
 
 unprovision-terraform
 
-This will remove all the created EC2 resources.
+This will destroy all the created EC2 resources. If you automatically want to destroy the 
+environment after completing the benchmark, uncomment the last part of the benchmark.py file.

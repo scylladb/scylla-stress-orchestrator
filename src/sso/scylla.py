@@ -23,8 +23,8 @@ def clear_cluster(cluster_public_ips, cluster_user, ssh_options, duration_second
 def restart_cluster(cluster_public_ips, cluster_user, ssh_options, duration_seconds=90):
     print("Restart cluster ")
     pssh = PSSH(cluster_public_ips, cluster_user, ssh_options);
-    #print("nodetool flush")
-    pssh.exec("nodetool flush")
+    print("nodetool drain")
+    pssh.exec("nodetool drain")
     print("sudo systemctl stop scylla-server")    
     pssh.exec("sudo systemctl stop scylla-server")
     print("sudo systemctl start scylla-server")    
