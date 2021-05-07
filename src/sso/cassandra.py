@@ -9,11 +9,14 @@ from sso.util import run_parallel, WorkerThread
 
 class Cassandra:
 
-    def __init__(self, cluster_public_ips, cluster_private_ips, properties):
+    def __init__(self, cluster_public_ips, cluster_private_ips, properties, cassandra_version="4.0-beta4"):
         self.properties = properties
         self.cluster_public_ips = cluster_public_ips
         self.cluster_private_ips = cluster_private_ips
-        self.cassandra_version = properties['cassandra_version']
+        if cassandra_version is not None:
+            self.cassandra_version = cassandra_version
+        else:
+            self.cassandra_version = properties['cassandra_version']
         self.ssh_user = properties['cluster_user']
   
     def __new_ssh(self, ip):

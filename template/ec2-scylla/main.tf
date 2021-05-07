@@ -79,6 +79,14 @@ resource "aws_security_group" "cluster-sg" {
     }
   
     ingress {
+        description = "NodeExporter"
+        from_port   = 9100
+        to_port     = 9100
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+  
+    ingress {
         description = "Prometheus"
         from_port   = 9180
         to_port     = 9180
@@ -287,6 +295,15 @@ resource "null_resource" "configure-prometheus" {
         destination = "scylla-monitoring-scylla-monitoring-3.6.3/prometheus/scylla_servers.yml"
     }
 
+    provisioner "file" {
+        content     = templatefile("node_exporter.tpl", {
+            ips       = aws_instance.cluster.*.private_ip
+            cluster   = "cluster1"
+            dc        = "us-east-2"
+        })
+        destination = "scylla-monitoring-scylla-monitoring-3.6.3/prometheus/node_exporter"
+    }
+    
     provisioner "remote-exec" {
         inline = [
             "cd scylla-monitoring-scylla-monitoring-3.6.3",
