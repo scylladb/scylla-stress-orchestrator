@@ -61,7 +61,6 @@ def find_java(properties):
     path = properties.get("jvm_path")
     if path:
         return f"{path}/bin/java"
-    # from whichcraft import which
     from shutil import which
     path = which("java")
     if path:
