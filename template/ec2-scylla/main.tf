@@ -306,9 +306,10 @@ resource "null_resource" "configure-prometheus" {
     
     provisioner "remote-exec" {
         inline = [
+            "mkdir -p data",
             "cd scylla-monitoring-scylla-monitoring-3.6.3",
             "./kill-all.sh",
-            "./start-all.sh",
+            "./start-all.sh -v 4.3 -d ../data",
         ]
     }
 }
