@@ -1,19 +1,19 @@
 import os
 import glob
 import csv
-
+from sso.util import find_java
 
 class HdrLogProcessor:
     
     def __init__(self, properties, warmup_seconds=None, cooldown_seconds=None):
         self.properties = properties
+        self.java_path = find_java(self.properties)       
         self.warmup_seconds = warmup_seconds
         self.cooldown_seconds = cooldown_seconds
 
     def __trim(self, file):
         filename = os.path.basename(file)
         filename_no_ext = os.path.splitext(filename)[0]
-        jvm_path = self.properties['jvm_path']
         dir = os.path.dirname(os.path.realpath(file))
         
         old_cwd = os.getcwd()
@@ -27,7 +27,7 @@ class HdrLogProcessor:
         if self.cooldown_seconds is not None:
             args = f'{args} -end {self.cooldown_seconds}'
             
-        cmd = f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain {args}'
+        cmd = f'{self.java_path} -cp {lib_dir}/processor.jar CommandDispatcherMain {args}'
         print(cmd)
         os.system(cmd)
         os.chdir(old_cwd)
@@ -65,12 +65,11 @@ class HdrLogProcessor:
             files.append(hdr_file)
 
         lib_dir=f"{os.environ['SSO']}/lib/"    
-        jvm_path = self.properties['jvm_path']
         for name, files in files_map.items():
             input = ""
             for file in files:
                 input = input + " -ifp " + file
-            cmd = f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain union {input} -of {dir}/{name}.hdr'
+            cmd = f'{self.java_path} -cp {lib_dir}/processor.jar CommandDispatcherMain union {input} -of {dir}/{name}.hdr'
             print(cmd)
             os.system(cmd)
 
@@ -79,14 +78,14 @@ class HdrLogProcessor:
     def __summarize(self, file):
         filename = os.path.basename(file)
         filename_no_ext = os.path.splitext(filename)[0]
-        jvm_path = self.properties['jvm_path']
+        java_path = util.java_path(self.properties)       
         old_cwd = os.getcwd()
         new_cwd = os.path.dirname(os.path.realpath(file))
         os.chdir(new_cwd)
 
         lib_dir=f"{os.environ['SSO']}/lib/"     
         args = f'-if {filename_no_ext}.hdr'        
-        os.system(f'{jvm_path}/bin/java -cp {lib_dir}/processor.jar CommandDispatcherMain summarize {args} >  {filename_no_ext}-summary.txt')
+        os.system(f'{self.java_path} -cp {lib_dir}/processor.jar CommandDispatcherMain summarize {args} >  {filename_no_ext}-summary.txt')
         os.chdir(old_cwd)
         
     def summarize_recursivly(self, dir):       
@@ -99,7 +98,6 @@ class HdrLogProcessor:
     def __process(self, file):
         filename = os.path.basename(file)
         filename_no_ext = os.path.splitext(filename)[0]
-        jvm_path = self.properties['jvm_path']
         old_cwd = os.getcwd()
         new_cwd = os.path.dirname(os.path.realpath(file))
         os.chdir(new_cwd)
@@ -118,7 +116,7 @@ class HdrLogProcessor:
         lib_dir=f"{os.environ['SSO']}/lib/"
         for tag in tags:
             # process twice; once to get the csv formatted output and again for the non csv output.
-            logprocessor = f'{jvm_path}/bin/java -cp {lib_dir}/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor'
+            logprocessor = f'{self.java_path}/bin/java -cp {lib_dir}/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor'
             args = f'-i {filename} -o {filename_no_ext + "_" + tag} -tag {tag} -csv'
             os.system(f'{logprocessor} {args}')
             os.rename(f'{filename_no_ext + "_" + tag}.hgrm', f'{filename_no_ext + "_" + tag}.hgrm.csv')

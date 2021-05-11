@@ -56,7 +56,18 @@ def run_parallel(target, args_list, ignore_errors = False):
         thread.join()
         if not ignore_errors and thread.exception:
             raise Exception() from thread.exception
-    
+
+def find_java(properties):
+    path = properties.get("jvm_path")
+    if path:
+        return f"{path}/bin/java"
+    # from whichcraft import which
+    from shutil import which
+    path = which("java")
+    if path:
+        return path
+    else:
+        raise RuntimeError("Could not locate java")
     
 def join_all(*futures):
     for f in futures:

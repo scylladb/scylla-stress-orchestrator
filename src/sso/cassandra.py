@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread
+from sso.util import run_parallel, find_java, WorkerThread
 
 class Cassandra:
 
@@ -18,6 +18,8 @@ class Cassandra:
         else:
             self.cassandra_version = properties['cassandra_version']
         self.ssh_user = properties['cluster_user']
+        # trigger early detection of missing java.
+        find_java(properties)
   
     def __new_ssh(self, ip):
         return SSH(ip, self.ssh_user, self.properties['ssh_options'])
