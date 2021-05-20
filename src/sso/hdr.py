@@ -78,7 +78,6 @@ class HdrLogProcessor:
     def __summarize(self, file):
         filename = os.path.basename(file)
         filename_no_ext = os.path.splitext(filename)[0]
-        java_path = util.java_path(self.properties)       
         old_cwd = os.getcwd()
         new_cwd = os.path.dirname(os.path.realpath(file))
         os.chdir(new_cwd)
