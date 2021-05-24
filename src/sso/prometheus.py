@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from sso.ssh import SSH
-from sso.util import run_parallel
+from sso.util import run_parallel,log_important
 import uuid
 
 class Prometheus:
@@ -11,10 +11,48 @@ class Prometheus:
         self.user = user
         self.ssh_options = ssh_options
 
- 
+    def download_and_clear_data(self, dir):
+        self.stop()
+        self.download_data(dir)
+        self.clear()
+        self.start()
+
+    def stop(self):
+        log_important("Prometheus stop: started")
+        ssh = SSH(self.ip, self.user, self.ssh_options)
+        ssh.exec(
+            f"""
+                cd scylla-monitoring-scylla-monitoring-3.6.3
+                ./kill-all.sh
+            """)
+        log_important("Prometheus stop: done")
+    
+    def start(self):
+        log_important("Prometheus start: started")
+        ssh = SSH(self.ip, self.user, self.ssh_options)
+        ssh.exec(
+            f"""
+                mkdir -p data
+                cd scylla-monitoring-scylla-monitoring-3.6.3
+                ./start-all.sh -v 4.3 -d ../data
+            """)
+        log_important("Prometheus start: done")
+        
+    def download_data(self, dir):
+        log_important("Prometheus download data: started")
+        ssh = SSH(self.ip, self.user, self.ssh_options)
+        ssh.scp_from_remote(f"data", dir)
+        log_important("Prometheus download data: done")
+    
+    def clear_data(self):
+        log_important("Prometheus clear data: started")
+        ssh = SSH(self.ip, self.user, self.ssh_options)
+        ssh.exec("rm -fr data")
+        log_important("Prometheus clear data: done")
+        
     # https://groups.google.com/g/prometheus-users/c/0ZkYVj_8X8Q    
     # https://www.robustperception.io/taking-snapshots-of-prometheus-data
-    def take_snapshot(self, base_dir):
+    def download_snapshot(self, base_dir):
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.update()
         ssh.install("curl","jq")

@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from sso.ssh import SSH
-from sso.util import run_parallel
+from sso.util import run_parallel,log_important
 
 
 class Fio:
@@ -22,9 +22,9 @@ class Fio:
         ssh.scp_to_remote(file, self.dir_name)
 
     def upload(self, file):
-        print("============== Upload: started ===========================")
+        log_important(f"Upload: started")
         run_parallel(self.__upload, [(ip, file) for ip in self.ips])
-        print("============== Upload-Stress: done ==============================")
+        log_important(f"Upload-Stress: done")
 
     def __install(self, ip):
         print(f'    [{ip}] Instaling fio: started')
@@ -34,9 +34,9 @@ class Fio:
         print(f'    [{ip}] Instaling fio: done')
 
     def install(self):
-        print("============== fio Installation: started =================")
+        log_important(f"fio Installation: started")
         run_parallel(self.__install, [(ip,) for ip in self.ips])
-        print("============== fio Installation: done =================")
+        log_important(f"fio Installation: done")
 
     def __run(self, ip, options):
         print(f'    [{ip}] fio: started')
@@ -52,10 +52,10 @@ class Fio:
         print(f'    [{ip}] fio: done')
 
     def run(self, options):
-        print("============== fio run: started ===========================")
+        log_important(f"fio run: started")
         print(f"sudo fio {options}")
         run_parallel(self.__run, [(ip, options) for ip in self.ips])
-        print("============== fio run: done ===========================")
+        log_important(f"fio run: done")
 
     def __download(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
@@ -70,8 +70,8 @@ class Fio:
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
     def download(self, dir):
-        print("============== FIO Download: started ===========================")
+        log_important(f"fio download: started")
         run_parallel(self.__download, [(ip, dir) for ip in self.ips])
-        print("============== FIO Download: done ===========================")
+        log_important(f"fio download: done")
 
 

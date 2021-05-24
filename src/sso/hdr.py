@@ -1,7 +1,7 @@
 import os
 import glob
 import csv
-from sso.util import find_java
+from sso.util import find_java,log_important
 
 class HdrLogProcessor:
     
@@ -36,7 +36,7 @@ class HdrLogProcessor:
         if self.warmup_seconds is None and self.warmup_seconds is None:
             return
         
-        print("------------------ HdrLogProcessor.trim_recursivly -------------------------------------")       
+        log_important("HdrLogProcessor.trim_recursivly")
         
         for hdr_file in glob.iglob(dir + '/*/*.hdr', recursive=True):
             filename = os.path.basename(hdr_file)
@@ -46,11 +46,11 @@ class HdrLogProcessor:
             print(hdr_file)
             self.__trim(hdr_file)
         
-        print("------------------ HdrLogProcessor.trim_recursivly -------------------------------------")
+        log_important("HdrLogProcessor.trim_recursivly")
      
 
     def merge_recursivly(self, dir):
-        print("------------------ HdrLogProcessor.merge_recursivly -------------------------------------")
+        log_important("HdrLogProcessor.merge_recursivly")
         print(dir)
         # todo be careful with merging the merge file.
         files_map = {}
@@ -73,7 +73,7 @@ class HdrLogProcessor:
             print(cmd)
             os.system(cmd)
 
-        print("------------------ HdrLogProcessor.merge_recursivly -------------------------------------")
+        log_important("HdrLogProcessor.merge_recursivly")
 
     def __summarize(self, file):
         filename = os.path.basename(file)
@@ -88,11 +88,11 @@ class HdrLogProcessor:
         os.chdir(old_cwd)
         
     def summarize_recursivly(self, dir):       
-        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")
+        log_important("HdrLogProcessor.summarize_recursivly")
         for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
             print(hdr_file)
             self.__summarize(hdr_file)
-        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")
+        log_important("HdrLogProcessor.summarize_recursivly")
 
     def __process(self, file):
         filename = os.path.basename(file)
@@ -127,9 +127,9 @@ class HdrLogProcessor:
         os.chdir(old_cwd)
 
     def process_recursivly(self, dir):
-        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")       
+        log_important("HdrLogProcessor.summarize_recursivly")       
         for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
             print(hdr_file)
             self.__process(hdr_file)
-        print("------------------ HdrLogProcessor.summarize_recursivly -------------------------------------")
+        log_important("HdrLogProcessor.summarize_recursivly")
        

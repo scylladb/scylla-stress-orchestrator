@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread
+from sso.util import run_parallel, WorkerThread,log_important
 
 
 class CassandraStress:
@@ -54,9 +54,9 @@ class CassandraStress:
         print(f'    [{ip}] Installing cassandra-stress: done')
 
     def install(self):
-        print("============== Installing Cassandra-Stress: started =================")
+        log_important("Installing Cassandra-Stress: started")
         run_parallel(self.__install, [(ip,) for ip in self.load_ips])
-        print("============== Installing Cassandra-Stress: done =================")
+        log_important("Installing Cassandra-Stress: done")
 
     def __stress(self, ip, cmd):
         if self.scylla_tools:
@@ -68,15 +68,13 @@ class CassandraStress:
         dt=datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         full_cmd = full_cmd + f" 2>&1 | tee -a cassandra-stress-{dt}.log"    
         print(full_cmd)
-        print(f"{ip} {full_cmd} started-------------------------------------------------------------------------")
         self.__new_ssh(ip).exec(full_cmd)
-        print(f"{ip} {full_cmd} finshed-------------------------------------------------------------------------")
-
+      
     def stress(self, command, load_index=None):
         if load_index is None:
-            print("============== Cassandra-Stress: started ===========================")
+            log_important("Cassandra-Stress: started")
             run_parallel(self.__stress, [(ip, command) for ip in self.load_ips])
-            print("============== Cassandra-Stress: done ==============================")
+            log_important("Cassandra-Stress: done")
         else:
             print("using load_index " + str(load_index))
             self.__stress(self.load_ips[load_index], command)
@@ -87,7 +85,7 @@ class CassandraStress:
         return thread.future
 
     def insert(self, profile, item_count, nodes, mode="native cql3", rate="threads=100", sequence_start=None):
-        print(f"============== Inserting {item_count} items ===========================")
+        log_important(f"Inserting {item_count} items")
         start_seconds = time.time()
 
         per_load_generator = item_count // len(self.load_ips)
@@ -117,7 +115,7 @@ class CassandraStress:
         duration_seconds = time.time() - start_seconds
         print(f"Duration : {duration_seconds} seconds")
         print(f"Insertion rate: {item_count // duration_seconds} items/second")
-        print(f"============== Inserting {item_count} items: done =======================")
+        log_important(f"Inserting {item_count} items: done")
 
     def __ssh(self, ip, command):
         self.__new_ssh(ip).exec(command)
@@ -129,9 +127,9 @@ class CassandraStress:
         self.__new_ssh(ip).scp_to_remote(file, "")
 
     def upload(self, file):
-        print("============== Upload: started ===========================")
+        log_important(f"Upload: started")
         run_parallel(self.__upload, [(ip, file) for ip in self.load_ips])
-        print("============== Upload: done ==============================")
+        log_important(f"Upload: done")
 
     def __collect(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
@@ -156,14 +154,14 @@ class CassandraStress:
             be created where the cooldown period is trimmed.            
         """
 
-        print("============== Collecting results: started ===========================")
+        log_important(f"Collecting results: started")
         run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
         p = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
         p.trim_recursivly(dir)
         p.merge_recursivly(dir)
         p.process_recursivly(dir)
         p.summarize_recursivly(dir)        
-        print("============== Collecting results: done ==============================")
+        log_important(f"Collecting results: done")
         print(f"Results can be found in [{dir}]")
      
     def __prepare(self, ip):
@@ -174,6 +172,6 @@ class CassandraStress:
         print(f'    [{ip}] Preparing: done')
 
     def prepare(self):
-        print('============== Preparing load generator: started ===================')
+        log_important(f"Preparing load generator: started")
         run_parallel(self.__prepare, [(ip,) for ip in self.load_ips])
-        print('============== Preparing load generator: done ======================')
+        log_important(f"Preparing load generator: done")

@@ -1,3 +1,4 @@
+from datetime import datetime
 from threading import Thread
 from threading import Lock, Condition
  
@@ -78,3 +79,11 @@ def print_important(text):
     print("                     "+text)
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
+def log_important(text):
+    l = 80 -len(text)
+    if l > 0:
+        s = '-' * l
+    else:
+        s = ''
+    dt = datetime.now().strftime("%H:%M:%S")
+    print(f"{dt} |-------------[ {text} ]{s}-----")

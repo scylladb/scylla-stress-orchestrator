@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from sso.ssh import SSH
-from sso.util import run_parallel
+from sso.util import run_parallel,log_important
 
 
 class DiskExplorer:
@@ -28,9 +28,9 @@ class DiskExplorer:
         print(f'    [{ip}] Installing disk-explorer: done')
 
     def install(self):
-        print("============== Disk Explorer Installation: started =================")
+        log_important("Disk Explorer Installation: started")
         run_parallel(self.__install, [(ip,) for ip in self.ips])
-        print("============== Disk Explorer Installation: done =================")
+        log_important("Disk Explorer Installation: done")
 
     def __run(self, ip, cmd):
         print(f'    [{ip}] Run: started')
@@ -52,12 +52,10 @@ class DiskExplorer:
         print(f'    [{ip}] Run: done')
 
     def run(self, command):
-        print(
-            f'============== Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]===========================')        
+       log_important(f'Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]')        
         print(f"python3 diskplorer.py {command}")
         run_parallel(self.__run, [(ip, command) for ip in self.ips])
-        print(
-            f'============== Disk Explorer run: done [{datetime.now().strftime("%H:%M:%S")}] ===========================')
+        log_important(f'Disk Explorer run: done [{datetime.now().strftime("%H:%M:%S")}]')
 
     def __download(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
@@ -70,8 +68,8 @@ class DiskExplorer:
         print(f'    [{ip}] Downloading to [{dest_dir}] done')
 
     def download(self, dir):
-        print("============== Disk Explorer Download: started ===========================")
+        log_important("Disk Explorer Download: started")
         run_parallel(self.__download, [(ip, dir) for ip in self.ips])
-        print("============== Disk Explorer Download: done ===========================")
+        log_important("Disk Explorer Download: done")
         print(f"Results can be found in [{dir}]")
      
