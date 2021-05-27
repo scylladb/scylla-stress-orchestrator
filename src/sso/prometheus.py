@@ -4,6 +4,13 @@ from sso.ssh import SSH
 from sso.util import run_parallel,log_important
 import uuid
 
+def download_and_clear(env, props, iteration):
+    prometheus = Prometheus(env['prometheus_public_ip'][0], props['prometheus_user'], props['ssh_options'])
+    prometheus.stop()
+    prometheus.data_dir_download(iteration.dir)
+    prometheus.data_dir_rm()
+    prometheus.start()
+    
 class Prometheus:
     
     def __init__(self, ip, user, ssh_options):
@@ -11,19 +18,19 @@ class Prometheus:
         self.user = user
         self.ssh_options = ssh_options
 
-    def download_and_clear_data(self, dir):
-        self.stop()
-        self.download_data(dir)
-        self.clear()
-        self.start()
-
+    def data_dir_upload(self, dir):
+        log_important("Prometheus upload: started")
+        ssh = SSH(self.ip, self.user, self.ssh_options)        
+        ssh.scp_to_remote(dir+"/*", "data")
+        log_important("Prometheus upload: done")
+        
     def stop(self):
         log_important("Prometheus stop: started")
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.exec(
             f"""
-                cd scylla-monitoring-scylla-monitoring-3.6.3
-                ./kill-all.sh
+            cd scylla-monitoring-scylla-monitoring-3.6.3
+            ./kill-all.sh
             """)
         log_important("Prometheus stop: done")
     
@@ -32,42 +39,20 @@ class Prometheus:
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.exec(
             f"""
-                mkdir -p data
-                cd scylla-monitoring-scylla-monitoring-3.6.3
-                ./start-all.sh -v 4.3 -d ../data
+            mkdir -p data
+            cd scylla-monitoring-scylla-monitoring-3.6.3
+            ./start-all.sh -v 4.3 -d ../data
             """)
         log_important("Prometheus start: done")
         
-    def download_data(self, dir):
+    def data_dir_download(self, dir):
         log_important("Prometheus download data: started")
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.scp_from_remote(f"data", dir)
         log_important("Prometheus download data: done")
     
-    def clear_data(self):
+    def data_dir_rm(self):
         log_important("Prometheus clear data: started")
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.exec("rm -fr data")
         log_important("Prometheus clear data: done")
-        
-    # https://groups.google.com/g/prometheus-users/c/0ZkYVj_8X8Q    
-    # https://www.robustperception.io/taking-snapshots-of-prometheus-data
-    def download_snapshot(self, base_dir):
-        ssh = SSH(self.ip, self.user, self.ssh_options)
-        ssh.update()
-        ssh.install("curl","jq")
-        ssh.exec(
-            f"""
-            container_id=$(docker ps -q -f name=aprom)
-            mkdir snapshots
-            response=$(curl -XPOST http://localhost:9090/api/v2/admin/tsdb/snapshot)
-            echo $response
-            name=$(echo $response | jq -r '.name')
-            docker cp ${{container_id}}:/prometheus/snapshots/${{name}}/ snapshots
-            """)
-        ssh.scp_from_remote(f"snapshots",base_dir)
-        ssh.exec("rm -fr snapshots")
-     
-     
-     
-#     docker run --rm -p 9090:9090 -uroot -v /eng/snapshots/20210414T124945Z-380704bb7b4d7c03/:/prometheus prom/prometheus -config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus

@@ -1,0 +1,15 @@
+#!/bin/python3
+
+
+import sys
+import os
+sys.path.insert(1, f"{os.environ['SSO']}/src/")
+
+import yaml
+from sso import terraform
+
+scylla_monitoring_path="/eng/scylla/scylla-monitoring-scylla-monitoring-3.7.0"
+
+cmd = f"{scylla_monitoring_path}/kill-all.sh"
+os.system(cmd)
+     

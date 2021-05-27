@@ -6,3 +6,4 @@ ssh_options: -i key -o StrictHostKeyChecking=no -o ConnectTimeout=60
 # Set this property if you want to control the JVM being used.
 #jvm_path: /eng/jdk/jdk1.8.0_251/
 cluster_user: centos
+prometheus_user: ubuntu
