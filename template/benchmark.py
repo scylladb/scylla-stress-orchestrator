@@ -10,6 +10,7 @@ from sso import common
 from sso import terraform
 from sso.cs import CassandraStress
 from sso.common import Iteration
+from sso import prometheus
 
 # Load the properties
 props = common.load_yaml('properties.yml')
@@ -42,6 +43,8 @@ cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration=2m -pop 
 
 # collect the results.
 cs.collect_results(iteration.dir)
+
+prometheus.download_and_clear(env, props, iteration)
 
 # Automatically terminates the cluster.
 #terraform.destroy(props['terraform_plan'])

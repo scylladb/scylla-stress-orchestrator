@@ -4,6 +4,12 @@ from sso.ssh import SSH
 from sso.util import run_parallel,log_important
 import uuid
 
+def download(env, props, iteration):
+    prometheus = Prometheus(env['prometheus_public_ip'][0], props['prometheus_user'], props['ssh_options'])
+    prometheus.stop()
+    prometheus.data_dir_download(iteration.dir)
+    prometheus.start()
+
 def download_and_clear(env, props, iteration):
     prometheus = Prometheus(env['prometheus_public_ip'][0], props['prometheus_user'], props['ssh_options'])
     prometheus.stop()
