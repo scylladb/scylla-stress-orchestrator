@@ -5,13 +5,17 @@ from sso.util import run_parallel,log_important
 import uuid
 
 def download(env, props, iteration):
-    prometheus = Prometheus(env['prometheus_public_ip'][0], props['prometheus_user'], props['ssh_options'])
+    prometheus = Prometheus(env['prometheus_public_ip'][0],
+                            props['prometheus_user'],
+                            props['ssh_options'])
     prometheus.stop()
     prometheus.data_dir_download(iteration.dir)
     prometheus.start()
 
 def download_and_clear(env, props, iteration):
-    prometheus = Prometheus(env['prometheus_public_ip'][0], props['prometheus_user'], props['ssh_options'])
+    prometheus = Prometheus(env['prometheus_public_ip'][0],
+                            props['prometheus_user'],
+                            props['ssh_options'])
     prometheus.stop()
     prometheus.data_dir_download(iteration.dir)
     prometheus.data_dir_rm()
@@ -26,7 +30,7 @@ class Prometheus:
 
     def data_dir_upload(self, dir):
         log_important("Prometheus upload: started")
-        ssh = SSH(self.ip, self.user, self.ssh_options)        
+        ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.scp_to_remote(dir+"/*", "data")
         log_important("Prometheus upload: done")
         

@@ -39,7 +39,8 @@ cs.upload("stress_example.yaml")
 cs.insert("stress_example.yaml", items, cluster_string)
  
 # Actual work
-cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration=2m -pop seq=1..{items} -mode native cql3 -rate threads=200 -node {cluster_string}')  
+cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration=2m -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate threads=200 -node {cluster_string}')  
+
 
 # collect the results.
 cs.collect_results(iteration.dir)

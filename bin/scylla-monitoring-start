@@ -1,6 +1,5 @@
 #!/bin/python3
 
-
 import sys
 import os
 sys.path.insert(1, f"{os.environ['SSO']}/src/")
@@ -13,7 +12,12 @@ if len(sys.argv) == 1:
     print("No data directory")
     exit(1)
 
+old_wd = os.getcwd()
 data_dir = sys.argv[1]
+
+if not os.path.isabs(data_dir):
+    data_dir = os.path.join(old_wd, data_dir)
+
 if not os.path.exists(data_dir):
     print(f"[{data_dir}] does not exist!")
     exit(1)
