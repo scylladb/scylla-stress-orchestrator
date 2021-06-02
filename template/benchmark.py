@@ -16,7 +16,7 @@ from sso import prometheus
 props = common.load_yaml('properties.yml')
 
 # Provision the machines.
-terraform.apply(props['terraform_plan'])
+# terraform.apply(props['terraform_plan'])
 
 # Load information about the created machines.
 env = common.load_yaml('environment.yml')
