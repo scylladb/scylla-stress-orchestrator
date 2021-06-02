@@ -36,7 +36,7 @@ os.system("./kill-all.sh")
 util.log_important("Killing Scylla Monitoring: done")
 
 util.log_important("Starting Scylla Monitoring: started")
-os.system(f"./start-all.sh -d {data_dir}")
+os.system(f"./start-all.sh -d {data_dir} -s prometheus/scylla_servers.example.yml")
 util.log_important("Starting Scylla Monitoring: done")
 
 os.chdir(old_wd)     
