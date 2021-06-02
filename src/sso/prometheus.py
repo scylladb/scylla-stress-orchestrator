@@ -1,8 +1,11 @@
 import os
+import uuid
 from datetime import datetime
+
 from sso.ssh import SSH
 from sso.util import run_parallel,log_important
-import uuid
+
+SCYLLA_MONITORING_VERSION="3.6.3"
 
 def download(env, props, iteration):
     prometheus = Prometheus(env['prometheus_public_ip'][0],
@@ -39,7 +42,7 @@ class Prometheus:
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.exec(
             f"""
-            cd scylla-monitoring-scylla-monitoring-3.6.3
+            cd scylla-monitoring-scylla-monitoring-{SCYLLA_MONITORING_VERSION}
             ./kill-all.sh
             """)
         log_important("Prometheus stop: done")
@@ -50,7 +53,7 @@ class Prometheus:
         ssh.exec(
             f"""
             mkdir -p data
-            cd scylla-monitoring-scylla-monitoring-3.6.3
+            cd scylla-monitoring-scylla-monitoring-{SCYLLA_MONITORING_VERSION}
             ./start-all.sh -v 4.3 -d ../data
             """)
         log_important("Prometheus start: done")

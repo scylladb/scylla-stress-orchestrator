@@ -4,9 +4,9 @@ ec2-scylla/variables.tf
 
 And modify the variables like the machine types etc.
 
-To run the benchmark execute the following:
+To provision the environment, execute the following:
 
-./benchmark.py
+provision-terraform
 
 The first time this script is called, it will create the following EC2 resources:
 - security groups
@@ -14,6 +14,10 @@ The first time this script is called, it will create the following EC2 resources
 - the Scylla machine(s)
 - Scylla monitor machine
 - load generator machine(s).
+
+To run the benchmark execute the following:
+
+./benchmark.py
 
 After the benchmark completes, you can find the results in the following directory:
 
