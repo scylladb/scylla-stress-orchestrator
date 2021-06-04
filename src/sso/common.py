@@ -10,13 +10,12 @@ def load_yaml(path):
     with open(path) as f:
         return yaml.load(f, Loader=yaml.FullLoader)
 
-
 class Iteration:
 
     # The purpose of the experimental flag is to modify the name of the trial directory to easily
     # weed out the experimental runs from non experimental ones. Otherwise it is easy to run in a 
     # messed up history where it isn't clear what is experimental and what isn't.
-    def __init__(self, trial_name, description=None, experimental=False):
+    def __init__(self, trial_name, description=None, experimental=False, ignore_git=False):
         self.trials_dir_name = "trials"
         self.trials_dir = os.path.join(os.getcwd(), self.trials_dir_name)
         self.trial_name = trial_name
@@ -46,18 +45,19 @@ class Iteration:
                 os.remove(latest_dir)
             os.symlink(self.dir, latest_dir, target_is_directory=True)
 
-        exitcode = subprocess.call("git status", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        if exitcode == 0:
-            if not experimental:
-                d = subprocess.check_output(" [[ -z $(git status -s) ]] || echo 'dirty'", shell=True).decode()
-                if d.startswith("dirty"):
-                    print("The current working directory is dirty, so can't store the git HEAD in the iteration directory.")
-                    exit(1)
+        if not ignore_git:    
+            exitcode = subprocess.call("git status", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if exitcode == 0:
+                if not experimental:
+                    d = subprocess.check_output(" [[ -z $(git status -s) ]] || echo 'dirty'", shell=True).decode()
+                    if d.startswith("dirty"):
+                        print("The current working directory is dirty, so can't store the git HEAD in the iteration directory.")
+                        exit(1)
             
-            output = subprocess.check_output("git log --pretty=format:'%h' -n 1", shell=True).decode()
-            git_file = os.path.join(self.dir, "HEAD")
-            with open(git_file, "w") as git_file:
-                print(output, file=git_file)
+                    output = subprocess.check_output("git log --pretty=format:'%h' -n 1", shell=True).decode()
+                    git_file = os.path.join(self.dir, "HEAD")
+                    with open(git_file, "w") as git_file:
+                        print(output, file=git_file)
 
         print(f'Using iteration directory [{self.dir}]')
     
