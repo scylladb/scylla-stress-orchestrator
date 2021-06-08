@@ -86,4 +86,4 @@ def log_important(text):
     else:
         s = ''
     dt = datetime.now().strftime("%H:%M:%S")
-    print(f"[{dt}] |-------------[ {text} ]{s}-----")
+    print(f"[{dt}]-------------[ {text} ]{s}-----")

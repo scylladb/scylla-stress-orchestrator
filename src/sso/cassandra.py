@@ -5,11 +5,11 @@ import time
 from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
-from sso.util import run_parallel, find_java, WorkerThread
+from sso.util import run_parallel, find_java, WorkerThread, log_important
 
 class Cassandra:
 
-    def __init__(self, cluster_public_ips, cluster_private_ips, properties, cassandra_version="4.0-beta4"):
+    def __init__(self, cluster_public_ips, cluster_private_ips, properties, cassandra_version=None):
         self.properties = properties
         self.cluster_public_ips = cluster_public_ips
         self.cluster_private_ips = cluster_private_ips
@@ -17,6 +17,7 @@ class Cassandra:
             self.cassandra_version = cassandra_version
         else:
             self.cassandra_version = properties['cassandra_version']
+            
         self.ssh_user = properties['cluster_user']
         # trigger early detection of missing java.
         find_java(properties)
@@ -54,9 +55,9 @@ class Cassandra:
         return self.cluster_private_ips[index]
 
     def install(self):
-        print("============== Installing Cassandra: started =================")
+        log_important("Installing Cassandra: started")
         run_parallel(self.__install, [(ip,) for ip in self.cluster_public_ips])
-        print("============== Installing Cassandra: done =================")
+        log_important("Installing Cassandra: done")
         
     def __start(self, ip):
         print(f'    [{ip}] Starting Cassandra: started')
@@ -74,9 +75,9 @@ class Cassandra:
         print(f'    [{ip}] Starting Cassandra: done')
 
     def start(self):
-        print("============== Start Cassandra: started =================")
+        log_important("Start Cassandra: started")
         run_parallel(self.__start, [(ip,) for ip in self.cluster_public_ips])
-        print("============== Start Cassandra: done =================")
+        log_important("Start Cassandra: done")
         
     def __stop(self, ip):
         print(f'    [{ip}] Stopping Cassandra: started')
@@ -93,6 +94,6 @@ class Cassandra:
         print(f'    [{ip}] Stopping Cassandra: done')
 
     def stop(self):
-        print("============== Start Cassandra: started =================")
+        log_important("Stop Cassandra: started")
         run_parallel(self.__stop, [(ip,) for ip in self.cluster_public_ips])
-        print("============== Start Cassandra: done =================")    
+        log_important("Stop Cassandra: done")    
