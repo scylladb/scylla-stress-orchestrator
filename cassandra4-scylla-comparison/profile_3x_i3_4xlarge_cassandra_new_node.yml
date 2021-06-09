@@ -1,0 +1,35 @@
+region: us-east-2
+availability_zone: us-east-2c
+
+cluster_size: 4
+cluster_instance_type: i3.4xlarge
+
+cluster_type: cassandra
+# Ubuntu 20.04 LTS
+cluster_user: ubuntu
+cluster_ami: ami-06382629a9eb569e3
+cassandra_version: 4.0.0
+
+prometheus_instance_type: c5.large
+prometheus_ami: ami-0dd9f0e7df0f0a138
+
+loadgenerator_instance_type: c5n.9xlarge
+loadgenerator_size: 3
+loadgenerator_ami: ami-0996d3051b72b5b2c
+loadgenerator_user: ubuntu
+
+ssh_options: -i key -o StrictHostKeyChecking=no -o ConnectTimeout=60
+
+# Benchmark-specific configuration
+start_count: 3
+
+compaction_strategy: SizeTieredCompactionStrategy
+
+prometheus_user: ubuntu
+target_dataset_size_gb: 3000
+
+# Loading operations per second
+loading_total_throttle: 56000
+
+# Background operations per second
+background_total_load_ops: 25000
