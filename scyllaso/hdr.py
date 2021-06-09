@@ -2,6 +2,7 @@ import os
 import glob
 import csv
 import pkg_resources
+from collections import namedtuple
 from scyllaso.util import find_java, log_important, log
 
 
@@ -14,7 +15,7 @@ class HdrLogProcessor:
         self.cooldown_seconds = cooldown_seconds
         module_dir = os.path.dirname(pkg_resources.resource_filename('scyllaso', '__init__.py'))
         self.lib_dir = os.path.join(module_dir, "lib")
-        print("lib_dir:"+str(self.lib_dir))
+        print("lib_dir:" + str(self.lib_dir))
 
     def __trim(self, file):
         filename = os.path.basename(file)
@@ -147,3 +148,39 @@ class HdrLogProcessor:
             log(hdr_file)
             self.__process(hdr_file)
         log_important("HdrLogProcessor.summarize_recursively")
+
+
+ProfileSummaryResult = namedtuple('ProfileSummaryResult',
+                                  ['ops_count', 'stress_time_s', 'throughput_per_second', 'mean_latency_ms',
+                                   'median_latency_ms', 'p90_latency_ms', 'p99_latency_ms', 'p99_9_latency_ms',
+                                   'p99_99_latency_ms', 'p99_999_latency_ms'])
+
+
+def parse_profile_summary_file(path, operation_name='insert'):
+    with open(path) as f:
+        config = f.readlines()
+        config = [x.strip() for x in config]
+        config = dict([x.split('=') for x in config if x])
+
+        ops_count = int(config[f'{operation_name}-rt.TotalCount'])
+        stress_time_s = float(config[f'{operation_name}-rt.Period(ms)'].replace(',', '.')) / 1000
+        throughput_per_second = float(config[f'{operation_name}-rt.Throughput(ops/sec)'].replace(',', '.'))
+        mean_latency_ms = float(config[f'{operation_name}-rt.Mean'].replace(',', '.')) / 1_000_000
+        median_latency_ms = float(config[f'{operation_name}-rt.50.000ptile'].replace(',', '.')) / 1_000_000
+        p90_latency_ms = float(config[f'{operation_name}-rt.90.000ptile'].replace(',', '.')) / 1_000_000
+        p99_latency_ms = float(config[f'{operation_name}-rt.99.000ptile'].replace(',', '.')) / 1_000_000
+        p99_9_latency_ms = float(config[f'{operation_name}-rt.99.900ptile'].replace(',', '.')) / 1_000_000
+        p99_99_latency_ms = float(config[f'{operation_name}-rt.99.990ptile'].replace(',', '.')) / 1_000_000
+        p99_999_latency_ms = float(config[f'{operation_name}-rt.99.999ptile'].replace(',', '.')) / 1_000_000
+
+        return ProfileSummaryResult(
+            ops_count=ops_count,
+            stress_time_s=stress_time_s,
+            throughput_per_second=throughput_per_second,
+            mean_latency_ms=mean_latency_ms,
+            median_latency_ms=median_latency_ms,
+            p90_latency_ms=p90_latency_ms,
+            p99_latency_ms=p99_latency_ms,
+            p99_9_latency_ms=p99_9_latency_ms,
+            p99_99_latency_ms=p99_99_latency_ms,
+            p99_999_latency_ms=p99_999_latency_ms)

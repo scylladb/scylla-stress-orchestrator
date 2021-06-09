@@ -6,9 +6,11 @@ from datetime import datetime
 from scyllaso.ssh import SSH
 from scyllaso.util import run_parallel
 
+
 def load_yaml(path):
     with open(path) as f:
         return yaml.load(f, Loader=yaml.FullLoader)
+
 
 class Iteration:
 

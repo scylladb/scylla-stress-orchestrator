@@ -31,8 +31,8 @@ setup(
             'kill_load_generators = scyllaso.bin.kill_load_generators:cli',
             'generate_benchmark = scyllaso.bin.generate_benchmark:cli',
             'flamegraph_cpu = scyllaso.bin.flamegraph_cpu:cli',
-            'provision_terraform = scyllaso.bin.provision_terraform:cli',
-            'unprovision_terraform = scyllaso.bin.unprovision_terraform:cli',
+            'provision_terraform = scyllaso.bin.provision_terraform:provision',
+            'unprovision_terraform = scyllaso.bin.provision_terraform:unprovision',
         ],
     }
 )

@@ -4,8 +4,8 @@ generate_benchmark = scyllaso.bin.generate_benchmark:cli
 kill_load_generators = scyllaso.bin.kill_load_generators:cli
 make_cpu_config = scyllaso.bin.make_cpu_config:cli
 make_key = scyllaso.bin.make_key:cli
-provision_terraform = scyllaso.bin.provision_terraform:cli
+provision_terraform = scyllaso.bin.provision_terraform:provision
 scylla_monitoring_start = scyllaso.bin.scylla_monitoring_start:cli
 scylla_monitoring_stop = scyllaso.bin.scylla_monitoring_stop:cli
-unprovision_terraform = scyllaso.bin.unprovision_terraform:cli
+unprovision_terraform = scyllaso.bin.provision_terraform:unprovision
 

@@ -10,6 +10,8 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("name",
                         help="The name of the benchmark.")
+    parser.add_argument("--template",
+                        help="The name of the benchmark template.", default="default")
     parser.add_argument("--resourceid",
                         help="An extra id to make resources unique. By default the username is used.", nargs='?')
     args = parser.parse_args()
@@ -27,7 +29,7 @@ def cli():
         print(f"Can't generate benchmark: dir/file [{target_dir}] already exists")
         exit(1)
 
-    copy_template(target_dir)
+    copy_template(target_dir, args.template)
 
     os.chdir(target_dir)
     make_key.cli()
@@ -35,11 +37,15 @@ def cli():
     os.chdir(cwd)
 
 
-def copy_template(target_dir):
+def copy_template(target_dir, template):
     module_dir = os.path.dirname(pkg_resources.resource_filename('scyllaso', '__init__.py'))
     benchmarks_dir = os.path.join(module_dir, "benchmarks")
-    default_dir = os.path.join(benchmarks_dir, "default")
-    shutil.copytree(default_dir, target_dir)
+    template_dir = os.path.join(benchmarks_dir, template)
+    if not os.path.exists(template_dir):
+        print(f"Template directory [{template_dir}] does not exist.")
+        exit(1)
+
+    shutil.copytree(template_dir, target_dir)
 
     python_cache = os.path.join(target_dir, "__pycache__")
     if os.path.exists(python_cache):

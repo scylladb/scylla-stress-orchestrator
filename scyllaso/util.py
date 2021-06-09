@@ -69,6 +69,26 @@ def run_parallel(target, args_list, ignore_errors=False):
             raise Exception() from thread.exception
 
 
+class WorkerThreadLoop(Thread):
+
+    def __init__(self, target, args):
+        super().__init__(target=target, args=args)
+        self.stopped = False
+
+    def run(self):
+        self.exception = None
+        while not self.stopped:
+            try:
+                if self._target is not None:
+                    self._target(*self._args, **self._kwargs)
+            except Exception as e:
+                self.exception = e
+                break
+
+    def request_stop(self):
+        self.stopped = True
+
+
 def find_java(properties):
     path = properties.get("jvm_path")
     if path:
@@ -86,8 +106,10 @@ def join_all(*futures):
         f.join()
 
 
-def call(cmd):
-    process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def call(cmd, shell=False, split=True):
+    if split:
+        cmd = cmd.split()
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
 
     sel = selectors.DefaultSelector()
     sel.register(process.stdout, selectors.EVENT_READ)

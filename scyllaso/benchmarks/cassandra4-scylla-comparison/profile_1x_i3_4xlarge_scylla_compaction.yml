@@ -1,0 +1,31 @@
+region: us-east-2
+availability_zone: us-east-2c
+
+cluster_type: scylla
+cluster_size: 1
+cluster_instance_type: i3.4xlarge
+cluster_user: centos
+
+# Scylla 4.4.3
+cluster_ami: ami-09b29bd4c673ace35
+
+prometheus_instance_type: c5.large
+prometheus_ami: ami-0dd9f0e7df0f0a138
+
+loadgenerator_instance_type: c5n.9xlarge
+loadgenerator_size: 3
+loadgenerator_ami: ami-0996d3051b72b5b2c
+loadgenerator_user: ubuntu
+
+ssh_options: -i key -o StrictHostKeyChecking=no -o ConnectTimeout=60
+
+compaction_strategy: SizeTieredCompactionStrategy
+
+prometheus_user: ubuntu
+target_dataset_size_gb: 1000
+
+# Loading operations per second
+loading_total_throttle: 100000
+
+# Background operations per second
+background_total_load_ops: 10000
