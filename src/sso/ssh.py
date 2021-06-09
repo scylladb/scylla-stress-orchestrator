@@ -157,7 +157,7 @@ class SSH:
         if self.__is_connected():
            socket = f"-S {self.control_socket_file}"
 
-        cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
+        cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} {shlex.quote(command)}'
         process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr = subprocess.PIPE)
     
         while True:
