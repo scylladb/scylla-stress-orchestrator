@@ -34,13 +34,25 @@ class PSSH:
         self.__new_ssh(ip).update()
 
     def update(self):
-        run_parallel(self.__update, [ip for ip in self.ip_list])
+        # todo: needs to be fixed; should be parallel, now sequential
+        for ip in self.ip_list:
+            ssh = SSH(ip, self.user, self.ssh_options)
+            ssh.update()
+
+        # can't get this to run correctly.
+        #run_parallel(self.__update, [ip for ip in self.ip_list])
 
     def __install_one(self, ip, *packages):
         self.__new_ssh(ip).install_one(*packages)
 
     def install_one(self, *packages):
         run_parallel(self.__install_one, [(ip, *packages) for ip in self.ip_list])
+
+    def __try_install(self, ip, *packages):
+        self.__new_ssh(ip).try_install(*packages)
+
+    def try_install(self, *packages):
+        run_parallel(self.__try_install, [(ip, *packages) for ip in self.ip_list])
 
     def __install(self, ip, *packages):
         self.__new_ssh(ip).install(*packages)
@@ -105,12 +117,13 @@ class SSH:
         exitcode = subprocess.call(cmd, shell=True)
         # raise Exception(f"Failed to execute {cmd} after {self.max_attempts} attempts")
 
-    def exec(self, command):
+    def exec(self, command, ignore_errors=False):
         self.__wait_for_connect()
 
         cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         exitcode = subprocess.call(cmd, shell=True)
-        if exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
+
+        if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
             return
         else:
             raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
@@ -165,7 +178,10 @@ class SSH:
             exit 1
             """)
 
-    def install(self, *packages):
+    def try_install(self, *packages):
+        self.install(*packages, ignore_errors=True)
+
+    def install(self, *packages, ignore_errors=False):
         for package in packages:
             print(f'    [{self.ip}] Install: {package}')
             self.exec(
@@ -175,10 +191,8 @@ class SSH:
                     sudo apt-get install -y -qq {package}
                 elif hash yum 2>/dev/null; then
                     sudo yum -y -q install {package}
-                elif hash dnf 2>/dev/null; then
-                    sudo dnf -y -q install {package}
                 else
                     echo "Cannot install {package}: yum/apt not found"
                     exit 1
                 fi
-                """)
+                """, ignore_errors=ignore_errors)

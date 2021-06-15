@@ -48,8 +48,12 @@ class WorkerThread(Thread):
 
 
 def run_parallel(target, args_list, ignore_errors = False):
+    # print(f"parallel{type(args_list)}")
+    # print(args_list)
     threads = []
     for args in args_list:
+        # print(f"run_parallel loop |{args}|")
+        # print(f"type {type(args)}")
         thread = WorkerThread(target, args)
         thread.start()
         threads.append(thread)
