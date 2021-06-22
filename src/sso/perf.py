@@ -70,6 +70,9 @@ class Perf:
         self.record(cmd)
         self.collect_flamegraph(dir, data_file, flamegraph_file)
 
+    def list(self):
+        self.exec("sudo perf list -v")
+
     def record(self, command):
         cmd = f"sudo perf record {command}"
         self.exec(cmd)
@@ -87,9 +90,10 @@ class Perf:
     def collect_flamegraph(self, dir, data_file = "perf.data", flamegraph_file = "flamegraph.svg"):
         log_important(f"Perf collecting flamegraph: started")
         ssh = SSH(self.ip_list[0], self.user, self.ssh_options)
+        # --no-online
         ssh.exec(f"""
                 cd /tmp
-                sudo perf script -i {data_file} --no-inline | FlameGraph/stackcollapse-perf.pl | FlameGraph/flamegraph.pl --hash > {flamegraph_file}
+                sudo perf script -i {data_file} | FlameGraph/stackcollapse-perf.pl | FlameGraph/flamegraph.pl --hash > {flamegraph_file}
                 """)
         ssh.scp_from_remote(f"/tmp/{flamegraph_file}", dir)
         ssh.exec(f"rm /tmp/{flamegraph_file}")
