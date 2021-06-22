@@ -33,18 +33,24 @@ cs.prepare()
 # Total number of items.
 items = 10_000_000
 
+# The running time of the benchmark
+duration = "2m"
+
+# The number of threads executing requests on each load generator
+threads = 200
+
 cs.upload("stress_example.yaml")
 
 # Insert the test data.
 cs.insert("stress_example.yaml", items, cluster_string)
  
-# Actual work
-cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration=2m -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate threads=200 -node {cluster_string}')  
-
+# Actual benchmark
+cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration={duration} -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate threads={threads} -node {cluster_string}')  
 
 # collect the results.
 cs.collect_results(iteration.dir)
 
+# Download and clear the prometheus data (can take a lot of time/space)
 prometheus.download_and_clear(env, props, iteration)
 
 # Automatically terminates the cluster.

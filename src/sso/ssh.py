@@ -157,18 +157,18 @@ class SSH:
                 echo Trying package [$package]
                 if hash apt-get 2>/dev/null ; then
                     if sudo apt show $package >/dev/null 2>&1; then
-                        echo Installing $package
+                        echo      [{self.ip}] Installing $package
                         sudo apt-get install -y -qq $package
                         exit 0
                     fi    
                 elif hash yum 2>/dev/null; then
-                    if sudo yum list --available $package >/dev/null 2>&1; then
-                        echo Installing $package
+                    if sudo yum info $package >/dev/null 2>&1; then
+                        echo      [{self.ip}] Installing $package
                         sudo yum -y -q install $package
                         exit 0
                     fi                        
                 else
-                    echo "Cannot install $package: yum/apt not found"
+                    echo "     [{self.ip}] Cannot install $package: yum/apt not found"
                     exit 1
                 fi
                     
