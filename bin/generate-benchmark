@@ -4,7 +4,7 @@ import os
 import sys
 import shutil
 import getpass
-
+import argparse
 
 
 sso_dir = os.environ['SSO']
@@ -12,13 +12,13 @@ template_dir = os.path.join(sso_dir,"template")
 bin_dir = os.path.join(sso_dir,"bin")
 sys.path.insert(1, f"{sso_dir}/src/")
 
-if len(sys.argv) != 2:
-    print("Expected 1 argument")
-    exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("name", help = "The name of the benchmark.")
+args = parser.parse_args()
 
-dir_name=sys.argv[1]
-cwd=os.getcwd()
-target_dir=os.path.join(cwd, dir_name)
+dir_name = args.name
+cwd = os.getcwd()
+target_dir = os.path.join(cwd, dir_name)
 
 if os.path.exists(target_dir):
     print(f"Can't generate benchmark: dir/file [{target_dir}] already exists")
@@ -29,7 +29,7 @@ shutil.copytree(template_dir, target_dir)
 os.chdir(target_dir)
 os.system(f"{bin_dir}/make_key")
 
-username=getpass.getuser()
+username = getpass.getuser()
 
 for subdir, dirs, files in os.walk(target_dir):
     for filename in files:
