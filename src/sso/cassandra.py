@@ -6,10 +6,11 @@ from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
 from sso.util import run_parallel, find_java, WorkerThread, log_important
+from sso.raid import RAID
 
 class Cassandra:
 
-    def __init__(self, cluster_public_ips, cluster_private_ips, properties, cassandra_version=None):
+    def __init__(self, cluster_public_ips, cluster_private_ips, properties, cassandra_version=None, setup_raid=False):
         self.properties = properties
         self.cluster_public_ips = cluster_public_ips
         self.cluster_private_ips = cluster_private_ips
@@ -19,6 +20,8 @@ class Cassandra:
             self.cassandra_version = properties['cassandra_version']
             
         self.ssh_user = properties['cluster_user']
+        self.setup_raid = setup_raid
+        self.cassandra_path_prefix = '.'
         # trigger early detection of missing java.
         find_java(properties)
   
@@ -36,14 +39,14 @@ class Cassandra:
         ssh.exec(f"""
             set -e
             
-            if [ -d 'apache-cassandra-{self.cassandra_version}' ]; then
+            if [ -d '{self.cassandra_path_prefix}/apache-cassandra-{self.cassandra_version}' ]; then
                 echo Cassandra {self.cassandra_version} already installed.
                 exit 0
             fi
             
             wget -q -N https://mirrors.netix.net/apache/cassandra/{self.cassandra_version}/apache-cassandra-{self.cassandra_version}-bin.tar.gz
-            tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz
-            cd apache-cassandra-{self.cassandra_version}
+            tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz -C {self.cassandra_path_prefix}/
+            cd {self.cassandra_path_prefix}/apache-cassandra-{self.cassandra_version}
             sudo sed -i \"s/seeds:.*/seeds: {seeds} /g\" conf/cassandra.yaml
             sudo sed -i \"s/listen_address:.*/listen_address: {private_ip} /g\" conf/cassandra.yaml
             sudo sed -i \"s/rpc_address:.*/rpc_address: {private_ip} /g\" conf/cassandra.yaml
@@ -56,6 +59,14 @@ class Cassandra:
 
     def install(self):
         log_important("Installing Cassandra: started")
+
+        if self.setup_raid:
+            print("Installing Cassandra: setting up RAID")
+            raid = RAID(self.cluster_public_ips, self.ssh_user, '/dev/nvme*n1', 'cassandra-raid', self.properties)
+            raid.install()
+            self.cassandra_path_prefix = 'cassandra-raid'
+            print("Installing Cassandra: finished setting up RAID")
+
         run_parallel(self.__install, [(ip,) for ip in self.cluster_public_ips])
         log_important("Installing Cassandra: done")
         
@@ -64,7 +75,7 @@ class Cassandra:
         ssh = self.__new_ssh(ip)
         ssh.exec(f"""
             set -e
-            cd apache-cassandra-{self.cassandra_version}
+            cd {self.cassandra_path_prefix}/apache-cassandra-{self.cassandra_version}
             if [ -f 'cassandra.pid' ]; then
                 pid=$(cat cassandra.pid)
                 kill $pid
@@ -84,7 +95,7 @@ class Cassandra:
         ssh = self.__new_ssh(ip)
         ssh.exec(f"""
             set -e
-            cd apache-cassandra-{self.cassandra_version}
+            cd {self.cassandra_path_prefix}/apache-cassandra-{self.cassandra_version}
             if [ -f 'cassandra.pid' ]; then
                 pid=$(cat cassandra.pid)
                 kill $pid
