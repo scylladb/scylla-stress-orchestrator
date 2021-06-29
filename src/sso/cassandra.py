@@ -6,6 +6,7 @@ from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
 from sso.util import run_parallel, find_java, WorkerThread, log_important
+from sso.network_wait import wait_for_cql_start
 
 class Cassandra:
 
@@ -76,7 +77,9 @@ class Cassandra:
 
     def start(self):
         log_important("Start Cassandra: started")
-        run_parallel(self.__start, [(ip,) for ip in self.cluster_public_ips])
+        for ip in self.cluster_public_ips:
+            self.__start(ip)
+            wait_for_cql_start(ip)
         log_important("Start Cassandra: done")
         
     def __stop(self, ip):
