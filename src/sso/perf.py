@@ -58,7 +58,8 @@ class Perf:
         pssh.exec(f"""
                 cd /tmp
                 if [ ! -d FlameGraph ]; then
-                    git clone --depth=1 https://github.com/brendangregg/FlameGraph
+                     echo "cloning flamegraph"
+                     git clone --depth=1 https://github.com/brendangregg/FlameGraph
                 fi
                 """)
         log_important("Perf install flamegraph: done")

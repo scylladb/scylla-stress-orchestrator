@@ -45,6 +45,11 @@ variable "cluster_user" {
 }
 
 variable "scylla_ami" {
+    # When a centos image is used, the extra packages are not installed.
+    # So you can't install tools like htop, hwloc etc.
+    # Check the following link to enable to extra packages
+    # https://fedoraproject.org/wiki/EPEL
+
     #  4.4.0
     default = "ami-0908bf554a8e333db"
 }
@@ -84,7 +89,7 @@ variable "loadgenerator_sg_name" {
 }
 
 variable "loadgenerator_size" {
-    default = "1"
+    default = "2"
 }
 
 variable "loadgenerator_ami" {

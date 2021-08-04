@@ -7,16 +7,16 @@ from sso.util import run_parallel
 # Parallel SSH
 class PSSH:
 
-    def __init__(self, ip_list, user, ssh_options, wait_for_connect=True, silent_seconds=30):
+    def __init__(self, ip_list, user, ssh_options, use_control_socket=True, silent_seconds=30):
         self.ip_list = ip_list
         self.user = user
         self.ssh_options = ssh_options
-        self.wait_for_connect = wait_for_connect
+        self.use_control_socket = use_control_socket
         self.silent_seconds = silent_seconds
         self.log_ssh = False
 
     def __new_ssh(self, ip):
-        return SSH(ip, self.user, self.ssh_options, wait_for_connect=self.wait_for_connect,
+        return SSH(ip, self.user, self.ssh_options, use_control_socket=self.use_control_socket,
                    silent_seconds=self.silent_seconds)
 
     def __exec(self, ip, cmd):
@@ -75,19 +75,25 @@ class PSSH:
   
 class SSH:
 
-    def __init__(self, ip, user, ssh_options, wait_for_connect=True, silent_seconds=30):
+    def __init__(self, ip, user, ssh_options, silent_seconds=30, use_control_socket = True):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options
-        self.wait_for_connect = wait_for_connect
         self.silent_seconds = silent_seconds
         self.log_ssh = False
+        if use_control_socket:
+            self.control_socket_file = f"/tmp/{self.user}@{self.ip}.socket"
+        else:
+            self.control_socket_file = None
 
     def __wait_for_connect(self):
-        if not self.wait_for_connect:
-            return
+        if self.control_socket_file:
+           if os.path.exists(self.control_socket_file): 
+               return
+           cmd = f'ssh -M -S {self.control_socket_file} -o ControlPersist=5m {self.ssh_options} {self.user}@{self.ip} exit'
+        else:
+           cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} exit'
 
-        cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} ls'
         exitcode = None
         for i in range(1, 300):
             if i > self.silent_seconds:
@@ -103,8 +109,11 @@ class SSH:
 
         raise Exception(f"Failed to connect to {self.ip}, exitcode={exitcode}")
 
+    def __is_connected(self):
+        return self.control_socket_file and os.path.exists(self.control_socket_file)
+
     def scp_from_remote(self, src, dst_dir):
-        os.makedirs(dst_dir, exist_ok=True)
+        os.makedirs(dst_dir, exist_ok=True)               
         cmd = f'scp {self.ssh_options} -r -q {self.user}@{self.ip}:{src} {dst_dir}'
         self.__scp(cmd)
 
@@ -120,7 +129,11 @@ class SSH:
     def exec(self, command, ignore_errors=False):
         self.__wait_for_connect()
 
-        cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} \'{command}\''
+        socket = ""
+        if self.__is_connected():
+           socket = f"-S {self.control_socket_file}"
+
+        cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         exitcode = subprocess.call(cmd, shell=True)
 
         if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
@@ -138,6 +151,11 @@ class SSH:
         self.exec(
             f"""
             set -e
+            if [ -f /tmp/update.called ] ; then
+                # echo "Skipping update"
+                exit 0
+            fi
+
             if hash apt-get 2>/dev/null; then
                 sudo apt-get -y -qq update
             elif hash yum 2>/dev/null; then
@@ -145,7 +163,10 @@ class SSH:
             else
                 echo "Cannot update: yum/apt not found"
                 exit 1
-            fi""")
+            fi
+
+            touch /tmp/update.called
+            """)
         print(f'    [{self.ip}] Update: done')
 
     def install_one(self, *packages):

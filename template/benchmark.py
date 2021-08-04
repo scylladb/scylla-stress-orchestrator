@@ -36,8 +36,10 @@ items = 10_000_000
 # The running time of the benchmark
 duration = "2m"
 
-# The number of threads executing requests on each load generator
-threads = 200
+# Configuration for throughput test 
+rate = f'threads=200'
+# Configuration for a latency: fixed number of requests per second
+# rate = f'threads=200 fixed="2000/s"'
 
 cs.upload("stress_example.yaml")
 
@@ -45,7 +47,7 @@ cs.upload("stress_example.yaml")
 cs.insert("stress_example.yaml", items, cluster_string)
  
 # Actual benchmark
-cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration={duration} -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate threads={threads} -node {cluster_string}')  
+cs.stress(f'user profile=./stress_example.yaml "ops(insert=1)" duration={duration} -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate {rate} -node {cluster_string}')  
 
 # collect the results.
 cs.collect_results(iteration.dir)
