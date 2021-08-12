@@ -2,7 +2,6 @@ import os
 import time
 
 from datetime import datetime
-from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
 from sso.util import run_parallel, WorkerThread,log_important
 
@@ -50,29 +49,40 @@ class ScyllaBench:
         thread.start()
         return thread.future
 
-    def insert(self, profile, item_count, nodes, mode="native cql3", rate="threads=100", sequence_start=None):
-        log_important(f"Inserting {item_count} items")
+    def insert(self, 
+               partition_count, 
+               nodes, 
+               partition_offset=0,
+               concurrency=64, 
+               clustering_row_count=1, 
+               extra_args=""):
+        log_important(f"Inserting {partition_count} partitions")
         start_seconds = time.time()
 
-        per_load_generator = item_count // len(self.load_ips)
-        start = sequence_start
-        if sequence_start is None:
-            start = 1
+        # todo: there could be some loss if there is a reaminer.
+        pc_per_lg = partition_count // len(self.load_ips)
 
-        end = start + per_load_generator - 1
         cmd_list = []
         for i in range(0, len(self.load_ips)):
-            cmd = f'user profile={profile} "ops(insert=1)" n={per_load_generator} no-warmup -pop seq={start}..{end} -mode {mode} -rate {rate}  -node {nodes}'
-            print(self.load_ips[i] + " " + cmd)
+            cmd = f"""-workload sequential \
+                      -clustering-row-count {clustering_row_count} \
+                      -mode write \
+                      -partition-count {pc_per_lg} \
+                      -partition-offset {partition_offset} \
+                      -nodes {nodes} \
+                      -concurrency {concurrency} \ 
+                      {extra_args}"""
+            # clean the string up.
+            cmd = " ".join(cmd.split())
             cmd_list.append(cmd)
-            start = end + 1
-            end = end + per_load_generator
+            partition_offset = partition_offset + pc_per_lg
 
         futures = []
         for i in range(0, len(self.load_ips)):
             f = self.async_stress(cmd_list[i], load_index=i)
             futures.append(f)
             if i == 0:
+                # first one is given some extra time to set up the tables and all that.
                 time.sleep(10)
 
         for f in futures:
@@ -80,8 +90,8 @@ class ScyllaBench:
 
         duration_seconds = time.time() - start_seconds
         print(f"Duration : {duration_seconds} seconds")
-        print(f"Insertion rate: {item_count // duration_seconds} items/second")
-        log_important(f"Inserting {item_count} items: done")
+        print(f"Insertion rate: {partition_count // duration_seconds} items/second")
+        log_important(f"Inserting {partition_count} partitions: done")
 
     def __ssh(self, ip, command):
         self.__new_ssh(ip).exec(command)
@@ -106,27 +116,16 @@ class ScyllaBench:
         ssh.exec(f'rm -fr *.log')
         print(f'    [{ip}] Collecting to [{dest_dir}] done')
 
-    def collect_results(self, dir, warmup_seconds=None, cooldown_seconds=None):
+    def collect_results(self, dir):
         """
         Parameters
         ----------
         dir: str
             The download directory.
-        warmup_seconds : str
-            The warmup period in seconds. If the value is set, additional files will 
-            be created where the warmup period is trimmed.
-        cooldown_seconds : str
-            The cooldown period in seconds. If the value is set, additional files will 
-            be created where the cooldown period is trimmed.            
         """
 
         log_important(f"Collecting results: started")
         run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
-        #p = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
-        #p.trim_recursivly(dir)
-        #p.merge_recursivly(dir)
-        #p.process_recursivly(dir)
-        #p.summarize_recursivly(dir)        
         log_important(f"Collecting results: done")
         print(f"Results can be found in [{dir}]")
      
