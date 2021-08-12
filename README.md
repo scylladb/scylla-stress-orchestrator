@@ -2,7 +2,8 @@ README
 
 # Scylla Stress Orchestrator
 
-The Scylla Stress Orchestrator is Python based framework for running various benchmark including cassandra-stress.
+The Scylla Stress Orchestrator is Python based framework for running various benchmark 
+including cassandra-stress and scylla-bench.
 
 ## Requirements
 
