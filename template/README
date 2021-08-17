@@ -15,9 +15,20 @@ The first time this script is called, it will create the following EC2 resources
 - Scylla monitor machine
 - load generator machine(s).
 
-To run the benchmark execute the following:
+There are 2 script that will run a benchmark:
 
-./benchmark.py
+- scylla-bench.py
+- cassandra-stress.py
+
+To run the scylla-bench, execute the following:
+
+./scylla-bench.py
+
+To run cassandra-stress, execute the following:
+
+./cassandra-stress.py
+
+Probably you want to delete one of the script and start modifying it.
 
 After the benchmark completes, you can find the results in the following directory:
 

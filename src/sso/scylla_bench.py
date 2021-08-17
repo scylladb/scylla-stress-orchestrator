@@ -19,7 +19,14 @@ class ScyllaBench:
         ssh.update()
         print(f'    [{ip}] Installing scylla_bench: started')
         ssh.install("golang")
-        ssh.exec("go get github.com/scylladb/scylla-bench")
+        #ssh.exec("go get github.com/scylladb/scylla-bench")
+
+        ssh.exec(f"""
+                  git clone https://github.com/scylladb/scylla-bench
+                  cd scylla-bench/
+                  go install .
+                  """)
+
         print(f'    [{ip}] Installing scylla_bench: done')
 
     def install(self):
