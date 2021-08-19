@@ -1,0 +1,21 @@
+#!/bin/python3
+
+import sys
+import os
+sys.path.insert(1, f"{os.environ['SSO']}/src/")
+
+import yaml
+
+from sso import common
+from sso import util
+from sso.ssh import PSSH
+
+# Load the properties
+props = common.load_yaml('properties.yml')
+
+# Load information about the created machines.
+env = common.load_yaml('environment.yml')
+
+pssh = PSSH(env['loadgenerator_public_ips'], props['load_generator_user'], props['ssh_options'])
+pssh.exec(f'killall -q -9 java')
+pssh.exec(f'killall -q -9 go/bin/scylla-bench')
