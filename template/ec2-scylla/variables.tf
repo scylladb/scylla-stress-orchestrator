@@ -50,8 +50,8 @@ variable "scylla_ami" {
     # Check the following link to enable to extra packages
     # https://fedoraproject.org/wiki/EPEL
 
-    #  4.4.0
-    default = "ami-0908bf554a8e333db"
+    #  4.4.4
+    default = "ami-0c0575324d81db474"
 }
 
 
