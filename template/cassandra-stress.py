@@ -8,6 +8,7 @@ sys.path.insert(1, f"{os.environ['SSO']}/src/")
 from time import sleep
 from sso import common
 from sso import terraform
+from sso import scylla
 from sso.cs import CassandraStress
 from sso.common import Iteration
 from sso import prometheus
