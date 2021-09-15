@@ -162,7 +162,6 @@ resource "null_resource" "cluster" {
 
     provisioner "remote-exec" {
         inline = [
-            "sudo scylla_io_setup",
             "sudo sed -i \"s/cluster_name:.*/cluster_name: cluster1/g\" /etc/scylla/scylla.yaml",
             "sudo sed -i \"s/seeds:.*/seeds: ${aws_instance.cluster[0].private_ip} /g\" /etc/scylla/scylla.yaml",
             "sudo systemctl start scylla-server",
