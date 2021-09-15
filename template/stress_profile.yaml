@@ -1,0 +1,33 @@
+keyspace: keyspace1
+
+keyspace_definition: |
+  CREATE KEYSPACE keyspace1 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+table: standard1
+
+table_definition: |
+  CREATE TABLE standard1 (
+        key text,
+        value text,
+        PRIMARY KEY(key)
+  )
+
+columnspec:
+  - name: key
+    size: fixed(32)
+    population: gaussian(1..100B)
+  - name: value                
+    size: fixed(1024)
+                                  
+insert:
+  partitions: fixed(1)            
+  select:    fixed(1)/400        
+  batchtype: UNLOGGED             
+                                  
+queries:
+    read:
+      cql: select * from standard1 where key = ?
+      fields: samerow      
+    write:
+      cql: update standard1 set value = ? where key = ?
+      fields: samerow   
