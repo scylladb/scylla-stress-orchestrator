@@ -7,17 +7,27 @@ from sso.util import run_parallel
 # Parallel SSH
 class PSSH:
 
-    def __init__(self, ip_list, user, ssh_options, use_control_socket=True, silent_seconds=30):
+    def __init__(self, 
+                 ip_list, 
+                 user, 
+                 ssh_options, 
+                 use_control_socket = True, 
+                 silent_seconds = 30, 
+                 log_ssh = False):
         self.ip_list = ip_list
         self.user = user
         self.ssh_options = ssh_options
         self.use_control_socket = use_control_socket
         self.silent_seconds = silent_seconds
-        self.log_ssh = False
+        self.log_ssh = log_ssh
 
     def __new_ssh(self, ip):
-        return SSH(ip, self.user, self.ssh_options, use_control_socket=self.use_control_socket,
-                   silent_seconds=self.silent_seconds)
+        return SSH(ip, 
+                   self.user, 
+                   self.ssh_options, 
+                   use_control_socket = self.use_control_socket,
+                   silent_seconds = self.silent_seconds, 
+                   log_ssh = self.log_ssh)
 
     def __exec(self, ip, cmd):
         self.__new_ssh(ip).exec(cmd)
@@ -64,7 +74,7 @@ class PSSH:
         self.__new_ssh(ip).scp_from_remote(src,  os.path.join(dst_dir, ip))
 
     def scp_from_remote(self, src, dst_dir):
-        run_parallel(self.__scp_from_remote, [(src, dst_dir, ip) for ip in self.ip_list])
+        run_parallel(self.__scp_from_remote,  [(src, dst_dir, ip) for ip in self.ip_list])
 
     def __scp_to_remote(self, src, dst, ip):
          self.__new_ssh(ip).scp_to_remote(src, dst)
@@ -75,12 +85,18 @@ class PSSH:
   
 class SSH:
 
-    def __init__(self, ip, user, ssh_options, silent_seconds=30, use_control_socket = True):
+    def __init__(self, 
+                 ip, 
+                 user, 
+                 ssh_options, 
+                 silent_seconds=30, 
+                 use_control_socket = True, 
+                 log_ssh = False):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options
         self.silent_seconds = silent_seconds
-        self.log_ssh = False
+        self.log_ssh = log_ssh
         if use_control_socket:
             self.control_socket_file = f"/tmp/{self.user}@{self.ip}.socket"
         else:
@@ -117,7 +133,7 @@ class SSH:
         cmd = f'scp {self.ssh_options} -r -q {self.user}@{self.ip}:{src} {dst_dir}'
         self.__scp(cmd)
 
-    def scp_to_remote(self, src, dst):
+    def scp_to_remote(self, src, dst):        
         cmd = f'scp {self.ssh_options} -r -q {src} {self.user}@{self.ip}:{dst}'
         self.__scp(cmd)
 
@@ -217,3 +233,14 @@ class SSH:
                     exit 1
                 fi
                 """, ignore_errors=ignore_errors)
+
+    def set_file_property(self, file_path, property, seperator, value):
+        self.exec(f"""
+            set -e
+            sudo touch {file_path}
+            if grep -q -E "^\\s*{property}\\s*{seperator}.*" {file_path}; then 
+                sudo sed -i "s/^\\s*{property}\\s*{seperator}.*/{property+seperator+value}/g" {file_path}
+            else
+                sudo sh -c "'echo {property+seperator+value}' >> {file_path}"
+            fi
+        """)
