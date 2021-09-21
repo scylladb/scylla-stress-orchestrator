@@ -1,5 +1,6 @@
 import os
 import subprocess
+import shlex
 import time
 from sso.util import run_parallel
 
@@ -150,7 +151,16 @@ class SSH:
            socket = f"-S {self.control_socket_file}"
 
         cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
-        exitcode = subprocess.call(cmd, shell=True)
+        process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr = subprocess.PIPE)
+        while True:
+            output = process.stdout.readline().decode()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                 print(f"    [{self.ip}] {output.strip()}")
+        exitcode = process.poll()
+
+        #exitcode = subprocess.call(cmd, shell=True)
 
         if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
             return
