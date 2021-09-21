@@ -58,8 +58,8 @@ class Perf:
         pssh.exec(f"""
                 cd /tmp
                 if [ ! -d FlameGraph ]; then
-                     echo "cloning flamegraph"
-                     git clone --depth=1 https://github.com/brendangregg/FlameGraph
+                    echo "cloning flamegraph"
+                    git clone https://github.com/brendangregg/FlameGraph
                 fi
                 """)
         log_important("Perf install flamegraph: done")
@@ -76,6 +76,10 @@ class Perf:
 
     def record(self, command):
         cmd = f"sudo perf record {command}"
+        self.exec(cmd)
+
+    def script(self, command):
+        cmd = f"sudo perf script {command}"
         self.exec(cmd)
 
     def exec(self, command):
