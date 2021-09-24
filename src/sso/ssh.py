@@ -2,7 +2,7 @@ import os
 import subprocess
 import shlex
 import time
-from sso.util import run_parallel
+from sso.util import run_parallel,log_machine
 
 
 # Parallel SSH
@@ -98,6 +98,7 @@ class SSH:
         self.ssh_options = ssh_options
         self.silent_seconds = silent_seconds
         self.log_ssh = log_ssh
+        self.prefix = "    "+f"[{self.ip}]".ljust(17, " ")
         if use_control_socket:
             self.control_socket_file = f"/tmp/{self.user}@{self.ip}.socket"
         else:
@@ -114,7 +115,7 @@ class SSH:
         exitcode = None
         for i in range(1, 300):
             if i > self.silent_seconds:
-                print(f"[{i}] Connect to {self.ip}")
+                print(f"{self.prefix} Connect to {self.ip}")
                 exitcode = subprocess.call(cmd, shell=True)
             else:
                 exitcode = subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -152,15 +153,15 @@ class SSH:
 
         cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr = subprocess.PIPE)
+    
         while True:
             output = process.stdout.readline().decode()
             if output == '' and process.poll() is not None:
                 break
             if output:
-                 print(f"    [{self.ip}] {output.strip()}")
+                 log_machine(self.ip, f'{output.strip()}')
+ 
         exitcode = process.poll()
-
-        #exitcode = subprocess.call(cmd, shell=True)
 
         if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
             return
@@ -173,7 +174,7 @@ class SSH:
         return thread.future
 
     def update(self):
-        print(f'    [{self.ip}] Update: started')
+        log_machine(self.ip, f'Update: started')
         self.exec(
             f"""
             set -e
@@ -193,7 +194,7 @@ class SSH:
 
             touch /tmp/update.called
             """)
-        print(f'    [{self.ip}] Update: done')
+        log_machine(self.ip, f'Update: done')
 
     def install_one(self, *packages):
         self.exec(
@@ -230,7 +231,7 @@ class SSH:
 
     def install(self, *packages, ignore_errors=False):
         for package in packages:
-            print(f'    [{self.ip}] Install: {package}')
+            log_machine(self.ip, f'Install: {package}')
             self.exec(
                 f"""
                 set -e

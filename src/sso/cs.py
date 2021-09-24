@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread,log_important
+from sso.util import run_parallel, WorkerThread,log_important,log_machine
 
 
 class CassandraStress:
@@ -23,7 +23,7 @@ class CassandraStress:
         ssh = self.__new_ssh(ip)
         ssh.update()
         if self.scylla_tools:
-            print(f'    [{ip}] Installing cassandra-stress (Scylla): started')
+            log_machine(ip, f'Installing cassandra-stress (Scylla): started')
             ssh.exec(f"""
                 set -e
                 if hash apt-get 2>/dev/null; then
@@ -42,7 +42,7 @@ class CassandraStress:
                 fi
                 """)
         else:
-            print(f'    [{ip}] Installing cassandra-stress (Cassandra): started')
+            log_machine(ip, f'Installing cassandra-stress (Cassandra): started')
             ssh.install_one('openjdk-8-jdk', 'java-1.8.0-openjdk')
             ssh.install('wget')
             ssh.exec(f"""
@@ -51,7 +51,7 @@ class CassandraStress:
                 tar -xzf apache-cassandra-{self.cassandra_version}-bin.tar.gz
             """)
 
-        print(f'    [{ip}] Installing cassandra-stress: done')
+        log_machine(ip, f'Installing cassandra-stress: done')
 
     def install(self):
         log_important("Installing Cassandra-Stress: started")
@@ -134,11 +134,11 @@ class CassandraStress:
     def __collect(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
         os.makedirs(dest_dir, exist_ok=True)
-        print(f'    [{ip}] Collecting to [{dest_dir}]')
+        log_machine(ip, f'Collecting to [{dest_dir}]')
         ssh = self.__new_ssh(ip)
         ssh.scp_from_remote(f'*.{{html,hdr,log}}', dest_dir)
         ssh.exec(f'rm -fr *.html *.hdr *.log')
-        print(f'    [{ip}] Collecting to [{dest_dir}] done')
+        log_machine(ip, f'Collecting to [{dest_dir}] done')
 
     def collect_results(self, dir, warmup_seconds=None, cooldown_seconds=None):
         """
@@ -165,11 +165,11 @@ class CassandraStress:
         print(f"Results can be found in [{dir}]")
      
     def __prepare(self, ip):
-        print(f'    [{ip}] Preparing: started')
+        log_machine(ip, f'Preparing: started')
         ssh = self.__new_ssh(ip)
         # we need to make sure that the no old load generator is still running.
         ssh.exec(f'killall -q -9 java')
-        print(f'    [{ip}] Preparing: done')
+        log_machine(ip, f'Preparing: done')
 
     def prepare(self):
         log_important(f"Preparing load generator: started")

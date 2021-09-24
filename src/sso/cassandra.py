@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
-from sso.util import run_parallel, find_java, WorkerThread, log_important
+from sso.util import run_parallel, find_java, WorkerThread, log_important, log_machine
 from sso.network_wait import wait_for_cql_start
 
 class Cassandra:
@@ -29,7 +29,7 @@ class Cassandra:
     def __install(self, ip):
         ssh = self.__new_ssh(ip)
         ssh.update()
-        print(f'    [{ip}] Installing Cassandra: started')
+        log_machine("Installing Cassandra: started",ip)      
         ssh.install_one('openjdk-8-jdk', 'java-1.8.0-openjdk')
         ssh.install('wget')
         seeds = ",".join(self.cluster_private_ips)
@@ -49,7 +49,7 @@ class Cassandra:
             sudo sed -i \"s/listen_address:.*/listen_address: {private_ip} /g\" conf/cassandra.yaml
             sudo sed -i \"s/rpc_address:.*/rpc_address: {private_ip} /g\" conf/cassandra.yaml
         """)
-        print(f'    [{ip}] Installing Cassandra: done')
+        log_machine("Installing Cassandra: done",ip)      
 
     def __find_private_ip(self, public_ip):
         index = self.cluster_public_ips.index(public_ip)
@@ -61,7 +61,7 @@ class Cassandra:
         log_important("Installing Cassandra: done")
         
     def __start(self, ip):
-        print(f'    [{ip}] Starting Cassandra: started')
+        log_machine("Starting Cassandra: started",ip)
         ssh = self.__new_ssh(ip)
         ssh.exec(f"""
             set -e
@@ -73,7 +73,8 @@ class Cassandra:
             fi
             bin/cassandra -p cassandra.pid 2>&1 >> cassandra.out & 
             """)
-        print(f'    [{ip}] Starting Cassandra: done')
+
+        log_machine("Starting Cassandra: done",ip)      
 
     def start(self):
         log_important("Start Cassandra: started")
@@ -83,7 +84,7 @@ class Cassandra:
         log_important("Start Cassandra: done")
         
     def __stop(self, ip):
-        print(f'    [{ip}] Stopping Cassandra: started')
+        print_indent_machine("Stopping Cassandra: started",ip)
         ssh = self.__new_ssh(ip)
         ssh.exec(f"""
             set -e
@@ -94,6 +95,7 @@ class Cassandra:
                 rm 'cassandra.pid'
             fi
             """)
+        
         print(f'    [{ip}] Stopping Cassandra: done')
 
     def stop(self):

@@ -3,7 +3,7 @@ import time
 
 from datetime import datetime
 from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread,log_important
+from sso.util import run_parallel, WorkerThread,log_important, log_machine
 
 class ScyllaBench:
 
@@ -17,7 +17,7 @@ class ScyllaBench:
     def __install(self, ip):
         ssh = self.__new_ssh(ip)
         ssh.update()
-        print(f'    [{ip}] Installing scylla_bench: started')
+        log_machine(ip, f'Installing scylla_bench: started')
         ssh.install("golang")
         #ssh.exec("go get github.com/scylladb/scylla-bench")
 
@@ -27,7 +27,7 @@ class ScyllaBench:
                   go install .
                   """)
 
-        print(f'    [{ip}] Installing scylla_bench: done')
+        log_machine(ip, f'Installing scylla_bench: done')
 
     def install(self):
         log_important("Installing scylla_bench: started")
@@ -117,11 +117,11 @@ class ScyllaBench:
     def __collect(self, ip, dir):
         dest_dir = os.path.join(dir, ip)
         os.makedirs(dest_dir, exist_ok=True)
-        print(f'    [{ip}] Collecting to [{dest_dir}]')
+        log_machine(ip, f'Collecting to [{dest_dir}]')
         ssh = self.__new_ssh(ip)
         ssh.scp_from_remote(f'*.log', dest_dir)
         ssh.exec(f'rm -fr *.log')
-        print(f'    [{ip}] Collecting to [{dest_dir}] done')
+        log_machine(ip, f'Collecting to [{dest_dir}] done')
 
     def collect_results(self, dir):
         """
@@ -137,11 +137,11 @@ class ScyllaBench:
         print(f"Results can be found in [{dir}]")
      
     def __prepare(self, ip):
-        print(f'    [{ip}] Preparing: started')
+        log_machine(ip, f'Preparing: started')
         ssh = self.__new_ssh(ip)
         # we need to make sure that the no old load generator is still running.
         ssh.exec(f'killall -q -9 go/bin/scylla-bench')
-        print(f'    [{ip}] Preparing: done')
+        log_machine(ip, f'Preparing: done')
 
     def prepare(self):
         log_important(f"Preparing load generator: started")
