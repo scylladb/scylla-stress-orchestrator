@@ -82,9 +82,25 @@ class HdrLogProcessor:
         new_cwd = os.path.dirname(os.path.realpath(file))
         os.chdir(new_cwd)
 
+        summary_text_name = f"{filename_no_ext}-summary.txt"
+        summary_csv_name = f"{filename_no_ext}-summary.csv"
+
         lib_dir=f"{os.environ['SSO']}/lib/"     
         args = f'-if {filename_no_ext}.hdr'        
-        os.system(f'{self.java_path} -cp {lib_dir}/processor.jar CommandDispatcherMain summarize {args} >  {filename_no_ext}-summary.txt')
+        os.system(f'{self.java_path} -cp {lib_dir}/processor.jar CommandDispatcherMain summarize {args} >  {summary_text_name}')
+
+        entries = {}
+        with open(summary_text_name, 'r') as summary_text_file:
+            for line in summary_text_file:
+               row = line.split('=')
+               entries[row[0].strip()] = row[1].strip()
+
+        with open(summary_csv_name, 'w') as summary_csv_file:
+            header = ','.join(entries.keys())
+            content = ','.join(entries.values())
+            summary_csv_file.write(f'{header}\n')
+            summary_csv_file.write(f'{content}\n')
+             
         os.chdir(old_cwd)
         
     def summarize_recursivly(self, dir):       
