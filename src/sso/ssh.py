@@ -83,6 +83,12 @@ class PSSH:
     def scp_to_remote(self, src, dst):
         run_parallel(self.__scp_to_remote, [(src, dst, ip) for ip in self.ip_list])
 
+    def __set_governor(self, ip, governor):
+        self.__new_ssh(ip).set_governor(governor)
+
+    def set_governor(self, governor):
+        run_parallel(self.__set_governor, [(ip, governor) for ip in self.ip_list])
+
   
 class SSH:
 
@@ -255,3 +261,44 @@ class SSH:
                 sudo sh -c "'echo {property+seperator+value}' >> {file_path}"
             fi
         """)
+
+    def set_governor(self, governor):
+        log_machine(self.ip, f'Set governor [{governor}]')
+        self.exec(f"""
+            set -e
+    
+            if ! hash cpupower 2>/dev/null; then
+                echo "Installing cpupower"
+                if hash apt-get 2>/dev/null; then
+                    sudo apt-get -y -qq update
+                    version=$(uname -r)
+                    sudo apt-get -y -qq install linux-tools-$version
+                    echo "apt-get found"                           
+                elif hash yum 2>/dev/null; then
+                    sudo yum -y -q install kernel-tools                
+                else
+                    echo "Cannot install {governor}: yum/apt not found"                
+                    exit 1
+                fi
+            fi
+            echo "=========== frequency info before change ==========="
+            sudo cpupower frequency-info
+            echo "===================================================="
+            frequencyinfo=$(sudo cpupower frequency-info)                  
+            if [[ $frequencyinfo =~ "{governor}" ]]; then
+                sudo cpupower frequency-set -g {governor}  
+                echo "=========== frequency info after change ==========="
+                sudo cpupower frequency-info
+                echo "===================================================="                      
+            else
+                echo "Governor [{governor}] is not supported"
+            fi             
+        """)
+
+
+def set_governor_performance(env, props):
+    pssh = PSSH(env['loadgenerator_public_ips'], props['load_generator_user'], props['ssh_options'])
+    pssh.set_governor("performance")
+
+    pssh = PSSH(env['cluster_public_ips'], props['cluster_user'], props['ssh_options'])
+    pssh.set_governor("performance")

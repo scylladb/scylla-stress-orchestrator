@@ -72,7 +72,7 @@ def find_java(properties):
         return path
     else:
         raise RuntimeError("Could not locate java")
-    
+
 def join_all(*futures):
     for f in futures:
         f.join()
