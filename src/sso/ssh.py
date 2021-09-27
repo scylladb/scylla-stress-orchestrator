@@ -295,10 +295,3 @@ class SSH:
             fi             
         """)
 
-
-def set_governor_performance(env, props):
-    pssh = PSSH(env['loadgenerator_public_ips'], props['load_generator_user'], props['ssh_options'])
-    pssh.set_governor("performance")
-
-    pssh = PSSH(env['cluster_public_ips'], props['cluster_user'], props['ssh_options'])
-    pssh.set_governor("performance")
