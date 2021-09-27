@@ -9,12 +9,13 @@ from sso.util import run_parallel, WorkerThread,log_important,log_machine
 
 class CassandraStress:
 
-    def __init__(self, load_ips, properties, scylla_tools=True):
+    def __init__(self, load_ips, properties, scylla_tools=True, performance_governor=True):
         self.properties = properties
         self.load_ips = load_ips
         self.cassandra_version = properties['cassandra_version']
         self.ssh_user = properties['load_generator_user']
         self.scylla_tools = scylla_tools
+        self.performance_governor = performance_governor
 
     def __new_ssh(self, ip):
         return SSH(ip, self.ssh_user, self.properties['ssh_options'])
@@ -22,6 +23,10 @@ class CassandraStress:
     def __install(self, ip):
         ssh = self.__new_ssh(ip)
         ssh.update()
+
+        if self.performance_governor:
+            ssh.set_governor("performance")
+
         if self.scylla_tools:
             log_machine(ip, f'Installing cassandra-stress (Scylla): started')
             ssh.exec(f"""

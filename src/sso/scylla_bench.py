@@ -7,17 +7,22 @@ from sso.util import run_parallel, WorkerThread,log_important, log_machine
 
 class ScyllaBench:
 
-    def __init__(self, load_ips, properties):
+    def __init__(self, load_ips, properties, performance_governor=True):
         self.properties = properties
         self.load_ips = load_ips
+        self.performance_governor = performance_governor
 
     def __new_ssh(self, ip):
         return SSH(ip, self.properties['load_generator_user'], self.properties['ssh_options'])
 
     def __install(self, ip):
         ssh = self.__new_ssh(ip)
-        ssh.update()
         log_machine(ip, f'Installing scylla_bench: started')
+        ssh.update()
+
+        if self.performance_governor:
+            ssh.set_governor("performance")
+
         ssh.install("golang")
         #ssh.exec("go get github.com/scylladb/scylla-bench")
 
