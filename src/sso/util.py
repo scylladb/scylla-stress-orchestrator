@@ -77,11 +77,6 @@ def join_all(*futures):
     for f in futures:
         f.join()
       
-def print_important(text):
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    print("                     "+text)
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
 def log_machine(ip, text):
     prefix = "    "+f"[{ip}]".ljust(17, " ")
     print(f"{prefix} {text}")    
