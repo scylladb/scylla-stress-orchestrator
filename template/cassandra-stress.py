@@ -12,33 +12,19 @@ from sso import scylla
 from sso.cs import CassandraStress
 from sso.common import Iteration
 from sso import prometheus
-from sso.scylla import Scylla
-from sso.cassandra import Cassandra
-
-if len(sys.argv) < 2:
-	raise Exception("Usage: ./benchmark.py [PROFILE_NAME]")
-
-profile_name = sys.argv[1]
 
 # Load the properties
-props = common.load_yaml(f'{profile_name}.yml')
+props = common.load_yaml('properties.yml')
+
+# Provision the machines.
+# terraform.apply(props['terraform_plan'])
 
 # Load information about the created machines.
-env = common.load_yaml(f'environment_{profile_name}.yml')
+env = common.load_yaml('environment.yml')
 cluster_private_ips = env['cluster_private_ips']
 cluster_string = ",".join(cluster_private_ips)
 
-# Start Scylla/Cassandra nodes
-if props['cluster_type'] == 'scylla':
-	scylla = Scylla(env['cluster_public_ips'], env['cluster_private_ips'], env['cluster_private_ips'][0], props)
-	scylla.install()
-	scylla.start()
-else:
-	cassandra = Cassandra(env['cluster_public_ips'], env['cluster_private_ips'], env['cluster_private_ips'][0], props)
-	cassandra.install()
-	cassandra.start()
-
-iteration = Iteration("dummy-benchmark", ignore_git=True)
+iteration = Iteration("dummy-benchmark")
 
 # Setup cassandra stress
 cs = CassandraStress(env['loadgenerator_public_ips'], props)

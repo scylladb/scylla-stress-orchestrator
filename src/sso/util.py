@@ -62,26 +62,6 @@ def run_parallel(target, args_list, ignore_errors = False):
         if not ignore_errors and thread.exception:
             raise Exception() from thread.exception
 
-class WorkerThreadLoop(Thread):
-
-    def __init__(self, target, args):
-        super().__init__(target=target, args=args)
-        self.stopped = False
-
-    def run(self):
-        self.exception = None
-        while not self.stopped:
-            try:
-                if self._target is not None:
-                    self._target(*self._args, **self._kwargs)
-            except Exception as e:
-                self.exception = e
-                break
-
-    def request_stop(self):
-        self.stopped = True
-
-
 def find_java(properties):
     path = properties.get("jvm_path")
     if path:
