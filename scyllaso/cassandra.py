@@ -3,10 +3,10 @@ import os
 import time
 
 from datetime import datetime
-from sso.hdr import HdrLogProcessor
-from sso.ssh import SSH
-from sso.util import run_parallel, find_java, WorkerThread, log_important, log_machine
-from sso.network_wait import wait_for_cql_start
+from scyllaso.hdr import HdrLogProcessor
+from scyllaso.ssh import SSH
+from scyllaso.util import run_parallel, find_java, WorkerThread, log_important, log_machine
+from scyllaso.network_wait import wait_for_cql_start
 
 class Cassandra:
 

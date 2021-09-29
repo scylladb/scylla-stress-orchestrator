@@ -2,9 +2,9 @@ import os
 import time
 
 from datetime import datetime
-from sso.hdr import HdrLogProcessor
-from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread,log_important,log_machine,log
+from scyllaso.hdr import HdrLogProcessor
+from scyllaso.ssh import SSH
+from scyllaso.util import run_parallel, WorkerThread, log_important, log_machine, log
 
 
 class CassandraStress:
@@ -69,12 +69,12 @@ class CassandraStress:
         else:
             cassandra_stress_dir = f'apache-cassandra-{self.cassandra_version}/tools/bin'
             full_cmd = f'{cassandra_stress_dir}/cassandra-stress {cmd}'
-            
-        dt=datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        full_cmd = full_cmd + f" 2>&1 | tee -a cassandra-stress-{dt}.log"    
+
+        dt = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        full_cmd = full_cmd + f" 2>&1 | tee -a cassandra-stress-{dt}.log"
         log(full_cmd)
         self.__new_ssh(ip).exec(full_cmd)
-      
+
     def stress(self, command, load_index=None):
         if load_index is None:
             log_important("Cassandra-Stress: started")
@@ -165,10 +165,10 @@ class CassandraStress:
         p.trim_recursivly(dir)
         p.merge_recursivly(dir)
         p.process_recursivly(dir)
-        p.summarize_recursivly(dir)        
+        p.summarize_recursivly(dir)
         log_important(f"Collecting results: done")
         log(f"Results can be found in [{dir}]")
-     
+
     def __prepare(self, ip):
         log_machine(ip, f'Preparing: started')
         ssh = self.__new_ssh(ip)

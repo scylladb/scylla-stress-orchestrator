@@ -1,7 +1,7 @@
 import os
 import time
 
-from sso import common
+from scyllaso import common
 
 def env_to_inventory():
     props = common.load_yaml('properties.yml')
