@@ -3,8 +3,8 @@ import yaml
 import subprocess
 import time
 from datetime import datetime
-from sso.ssh import SSH
-from sso.util import run_parallel
+from scyllaso.ssh import SSH
+from scyllaso.util import run_parallel
 
 def load_yaml(path):
     with open(path) as f:

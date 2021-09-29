@@ -2,8 +2,8 @@ import os
 import uuid
 from datetime import datetime
 
-from sso.ssh import SSH
-from sso.util import run_parallel,log_important
+from scyllaso.ssh import SSH
+from scyllaso.util import run_parallel,log_important
 
 SCYLLA_MONITORING_VERSION="3.6.3"
 

@@ -115,7 +115,7 @@ def log_machine(ip, text, log_level=LogLevel.info):
     if not text:
         return
 
-    prefix = "    " + f"[{ip}]".ljust(17, " ")
+    prefix = f"{ip}".ljust(15, " ") + "    "
     log(f"{prefix} {text}", log_level=log_level)
 
 

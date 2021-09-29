@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
-from sso.ssh import SSH
-from sso.util import run_parallel,log_important, log, log_machine
+from scyllaso.ssh import SSH
+from scyllaso.util import run_parallel,log_important,log_machine,log
 
 
 class Fio:

@@ -5,7 +5,7 @@ import subprocess
 import yaml
 
 from os import path
-from sso.util import log, call
+from scyllaso.util import log, call
 
 def apply(terraform_plan, options=None):
     option_str = "" 

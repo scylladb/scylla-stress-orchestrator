@@ -1,5 +1,5 @@
-from sso.ssh import PSSH,SSH
-from sso.util import log_important, log
+from scyllaso.ssh import PSSH,SSH
+from scyllaso.util import log_important, log
 
 class Perf:
 
