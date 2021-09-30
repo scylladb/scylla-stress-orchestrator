@@ -1,11 +1,11 @@
 import enum
-import os
 import shlex
 import subprocess
 import selectors
 from datetime import datetime
 from threading import Thread
 from threading import Lock, Condition
+
 
 class Future:
     def __init__(self):
@@ -17,9 +17,9 @@ class Future:
         with self.__condition:
             while not self.__is_set:
                 self.__condition.wait()
-                
+
             if self.__val is Exception:
-                 raise Exception() from self.__val
+                raise Exception() from self.__val
             return self.__val
 
     def join(self):
@@ -35,24 +35,25 @@ class Future:
 
     def done(self):
         return self.__is_set
- 
+
+
 class WorkerThread(Thread):
-    
+
     def __init__(self, target, args):
         super().__init__(target=target, args=args)
         self.future = Future()
-        
+
     def run(self):
-        self.exception = None 
+        self.exception = None
         try:
-             super().run()
-             self.future.set(True)
+            super().run()
+            self.future.set(True)
         except Exception as e:
-            self.exception = e    
+            self.exception = e
             self.future.set(e)
 
 
-def run_parallel(target, args_list, ignore_errors = False):
+def run_parallel(target, args_list, ignore_errors=False):
     # print(f"parallel{type(args_list)}")
     # print(args_list)
     threads = []
@@ -67,6 +68,7 @@ def run_parallel(target, args_list, ignore_errors = False):
         if not ignore_errors and thread.exception:
             raise Exception() from thread.exception
 
+
 def find_java(properties):
     path = properties.get("jvm_path")
     if path:
@@ -78,9 +80,11 @@ def find_java(properties):
     else:
         raise RuntimeError("Could not locate java")
 
+
 def join_all(*futures):
     for f in futures:
         f.join()
+
 
 def call(cmd):
     process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -100,32 +104,36 @@ def call(cmd):
             for line in lines:
                 log(line, log_level)
 
+
 class LogLevel(enum.Enum):
     info = 1
     error = 2
 
-def log_machine(ip, text, log_level = LogLevel.info):
-    prefix = "    "+f"[{ip}]".ljust(17, " ")
+
+def log_machine(ip, text, log_level=LogLevel.info):
+    prefix = "    " + f"[{ip}]".ljust(17, " ")
     dt = datetime.now().strftime("%H:%M:%S")
     level_txt = level_text(log_level)
-    print(f"[{dt}][{level_txt}] {prefix} {text}")
+    print(f" {dt} {level_txt} {prefix} {text}")
+
 
 def level_text(log_level):
-    level_txt = "INF"
+    level_txt = "INFO "
     if log_level == LogLevel.error:
-        level_txt = "ERR"
+        level_txt = "ERROR"
     return level_txt
 
-def log(text, log_level = LogLevel.info):
+
+def log(text, log_level=LogLevel.info):
     dt = datetime.now().strftime("%H:%M:%S")
     level_txt = level_text(log_level)
-    print(f"[{dt}][{level_txt}] {text}")
+    print(f"{dt} {level_txt} {text}")
+
 
 def log_important(text):
-    l = 80 -len(text)
+    l = 80 - len(text)
     if l > 0:
         s = '-' * l
     else:
         s = ''
-    dt = datetime.now().strftime("%H:%M:%S")
-    print(f"[{dt}]-------------[ {text} ]{s}-----")
+    log(f"-------------[ {text} ]{s}-----")

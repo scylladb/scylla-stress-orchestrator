@@ -3,13 +3,9 @@ import selectors
 import subprocess
 import shlex
 import time
-from sso.util import run_parallel,log_machine,log
-
+from sso.util import run_parallel,log_machine,log,LogLevel
 
 # Parallel SSH
-from src.sso.util import LogLevel
-
-
 class PSSH:
 
     def __init__(self, 
