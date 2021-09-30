@@ -114,7 +114,7 @@ def log_machine(ip, text, log_level=LogLevel.info):
     prefix = "    " + f"[{ip}]".ljust(17, " ")
     dt = datetime.now().strftime("%H:%M:%S")
     level_txt = level_text(log_level)
-    print(f" {dt} {level_txt} {prefix} {text}")
+    print(f"{dt} {level_txt} {prefix} {text}")
 
 
 def level_text(log_level):
