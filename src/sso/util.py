@@ -1,6 +1,8 @@
+import enum
 import os
 import shlex
 import subprocess
+import selectors
 from datetime import datetime
 from threading import Thread
 from threading import Lock, Condition
@@ -83,23 +85,41 @@ def join_all(*futures):
 def call(cmd):
     process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    sel = selectors.DefaultSelector()
+    sel.register(process.stdout, selectors.EVENT_READ)
+    sel.register(process.stderr, selectors.EVENT_READ)
+
     while True:
-        output = process.stdout.readline().decode().rstrip("\n")
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            log(f'{output}')
+        for key, _ in sel.select():
+            data = key.fileobj.read1().decode()
 
-    return process.poll()
+            if not data:
+                return process.poll()
+            lines = data.splitlines()
+            log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.error
+            for line in lines:
+                log(line, log_level)
 
-def log_machine(ip, text):
+class LogLevel(enum.Enum):
+    info = 1
+    error = 2
+
+def log_machine(ip, text, log_level = LogLevel.info):
     prefix = "    "+f"[{ip}]".ljust(17, " ")
     dt = datetime.now().strftime("%H:%M:%S")
-    print(f"[{dt}] {prefix} {text}")
+    level_txt = level_text(log_level)
+    print(f"[{dt}][{level_txt}] {prefix} {text}")
 
-def log(text):
+def level_text(log_level):
+    level_txt = "INF"
+    if log_level == LogLevel.error:
+        level_txt = "ERR"
+    return level_txt
+
+def log(text, log_level = LogLevel.info):
     dt = datetime.now().strftime("%H:%M:%S")
-    print(f"[{dt}] {text}")
+    level_txt = level_text(log_level)
+    print(f"[{dt}][{level_txt}] {text}")
 
 def log_important(text):
     l = 80 -len(text)

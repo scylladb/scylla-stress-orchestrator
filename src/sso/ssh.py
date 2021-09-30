@@ -1,4 +1,5 @@
 import os
+import selectors
 import subprocess
 import shlex
 import time
@@ -6,6 +7,9 @@ from sso.util import run_parallel,log_machine,log
 
 
 # Parallel SSH
+from src.sso.util import LogLevel
+
+
 class PSSH:
 
     def __init__(self, 
@@ -159,20 +163,24 @@ class SSH:
 
         cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr = subprocess.PIPE)
-    
-        while True:
-            output = process.stdout.readline().decode()
-            if output == '' and process.poll() is not None:
-                break
-            if output:
-                 log_machine(self.ip, f'{output.strip()}')
- 
-        exitcode = process.poll()
 
-        if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
-            return
-        else:
-            raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
+        sel = selectors.DefaultSelector()
+        sel.register(process.stdout, selectors.EVENT_READ)
+        sel.register(process.stderr, selectors.EVENT_READ)
+
+        while True:
+            for key, _ in sel.select():
+                data = key.fileobj.read1().decode()
+                if not data:
+                    exitcode = process.poll()
+                    if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
+                        return
+                    else:
+                        raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
+                lines = data.splitlines()
+                log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.error
+                for line in lines:
+                    log(line, log_level)
 
     def async_exec(self, command):
         thread = WorkerThread(self.exec, (command))
