@@ -176,7 +176,7 @@ class SSH:
                 lines = data.splitlines()
                 log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.warning
                 for line in lines:
-                    log(line, log_level)
+                    log_machine(self.ip, line, log_level)
 
     def async_exec(self, command):
         thread = WorkerThread(self.exec, (command))
