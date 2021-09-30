@@ -100,31 +100,38 @@ def call(cmd):
             if not data:
                 return process.poll()
             lines = data.splitlines()
-            log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.error
+            log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.warning
             for line in lines:
                 log(line, log_level)
 
 
 class LogLevel(enum.Enum):
     info = 1
-    error = 2
+    warning = 2
+    error = 3
 
 
 def log_machine(ip, text, log_level=LogLevel.info):
+    if not text:
+        return
+
     prefix = "    " + f"[{ip}]".ljust(17, " ")
-    dt = datetime.now().strftime("%H:%M:%S")
-    level_txt = level_text(log_level)
-    print(f"{dt} {level_txt} {prefix} {text}")
+    log(f"{prefix} {text}", log_level=log_level)
 
 
 def level_text(log_level):
-    level_txt = "INFO "
-    if log_level == LogLevel.error:
-        level_txt = "ERROR"
-    return level_txt
+    if log_level == LogLevel.info:
+        return "INFO "
+    elif log_level == LogLevel.warning:
+        return "WARN "
+    else:
+        return "ERROR"
 
 
 def log(text, log_level=LogLevel.info):
+    if not text:
+        return
+
     dt = datetime.now().strftime("%H:%M:%S")
     level_txt = level_text(log_level)
     print(f"{dt} {level_txt} {text}")

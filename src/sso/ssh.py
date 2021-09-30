@@ -174,7 +174,7 @@ class SSH:
                     else:
                         raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
                 lines = data.splitlines()
-                log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.error
+                log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.warning
                 for line in lines:
                     log(line, log_level)
 
