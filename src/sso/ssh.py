@@ -2,7 +2,7 @@ import os
 import subprocess
 import shlex
 import time
-from sso.util import run_parallel,log_machine
+from sso.util import run_parallel,log_machine,log
 
 
 # Parallel SSH
@@ -121,7 +121,7 @@ class SSH:
         exitcode = None
         for i in range(1, 300):
             if i > self.silent_seconds:
-                print(f"{self.prefix} Connect to {self.ip}")
+                log(f"{self.prefix} Connect to {self.ip}")
                 exitcode = subprocess.call(cmd, shell=True)
             else:
                 exitcode = subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

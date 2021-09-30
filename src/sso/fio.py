@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from sso.ssh import SSH
-from sso.util import run_parallel,log_important
+from sso.util import run_parallel,log_important, log, log_machine
 
 
 class Fio:
@@ -27,11 +27,11 @@ class Fio:
         log_important(f"Upload-Stress: done")
 
     def __install(self, ip):
-        print(f'    [{ip}] Instaling fio: started')
+        log_machine(ip, 'Installing fio: started')
         ssh = self.__new_ssh(ip)
         ssh.update()
         ssh.install('fio')
-        print(f'    [{ip}] Instaling fio: done')
+        log_machine(ip, 'Installing fio: done')
 
     def install(self):
         log_important(f"fio Installation: started")
@@ -39,7 +39,7 @@ class Fio:
         log_important(f"fio Installation: done")
 
     def __run(self, ip, options):
-        print(f'    [{ip}] fio: started')
+        log_machine(ip, 'fio: started')
         ssh = self.__new_ssh(ip)
         if self.capture_lsblk:
             ssh.exec(f'lsblk > lsblk.txt')
@@ -49,11 +49,11 @@ class Fio:
             cd {self.dir_name}
             sudo fio {options}            
             """)
-        print(f'    [{ip}] fio: done')
+        log_machine(ip, 'fio: done')
 
     def run(self, options):
         log_important(f"fio run: started")
-        print(f"sudo fio {options}")
+        log(f"sudo fio {options}")
         run_parallel(self.__run, [(ip, options) for ip in self.ips])
         log_important(f"fio run: done")
 
@@ -61,13 +61,13 @@ class Fio:
         dest_dir = os.path.join(dir, ip)
         os.makedirs(dest_dir, exist_ok=True)
 
-        print(f'    [{ip}] Downloading to [{dest_dir}]')
+        log_machine(ip, f'Downloading to [{dest_dir}]')
         ssh = self.__new_ssh(ip)
         ssh.scp_from_remote(f'{self.dir_name}/*', dest_dir)
         if self.capture_lsblk:
             self.__new_ssh(ip).scp_from_remote(f'lsblk.out', dest_dir)
 
-        print(f'    [{ip}] Downloading to [{dest_dir}] done')
+        log_machine(ip, f'Downloading to [{dest_dir}] done')
 
     def download(self, dir):
         log_important(f"fio download: started")

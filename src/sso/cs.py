@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from sso.hdr import HdrLogProcessor
 from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread,log_important,log_machine
+from sso.util import run_parallel, WorkerThread,log_important,log_machine,log
 
 
 class CassandraStress:
@@ -72,7 +72,7 @@ class CassandraStress:
             
         dt=datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         full_cmd = full_cmd + f" 2>&1 | tee -a cassandra-stress-{dt}.log"    
-        print(full_cmd)
+        log(full_cmd)
         self.__new_ssh(ip).exec(full_cmd)
       
     def stress(self, command, load_index=None):
@@ -81,7 +81,7 @@ class CassandraStress:
             run_parallel(self.__stress, [(ip, command) for ip in self.load_ips])
             log_important("Cassandra-Stress: done")
         else:
-            print("using load_index " + str(load_index))
+            log("using load_index " + str(load_index))
             self.__stress(self.load_ips[load_index], command)
 
     def async_stress(self, command, load_index=None):
@@ -102,7 +102,7 @@ class CassandraStress:
         cmd_list = []
         for i in range(0, len(self.load_ips)):
             cmd = f'user profile={profile} "ops(insert=1)" n={per_load_generator} no-warmup -pop seq={start}..{end} -mode {mode} -rate {rate}  -node {nodes}'
-            print(self.load_ips[i] + " " + cmd)
+            log(self.load_ips[i] + " " + cmd)
             cmd_list.append(cmd)
             start = end + 1
             end = end + per_load_generator
@@ -118,8 +118,8 @@ class CassandraStress:
             f.join()
 
         duration_seconds = time.time() - start_seconds
-        print(f"Duration : {duration_seconds} seconds")
-        print(f"Insertion rate: {item_count // duration_seconds} items/second")
+        log(f"Duration : {duration_seconds} seconds")
+        log(f"Insertion rate: {item_count // duration_seconds} items/second")
         log_important(f"Inserting {item_count} items: done")
 
     def __ssh(self, ip, command):
@@ -167,7 +167,7 @@ class CassandraStress:
         p.process_recursivly(dir)
         p.summarize_recursivly(dir)        
         log_important(f"Collecting results: done")
-        print(f"Results can be found in [{dir}]")
+        log(f"Results can be found in [{dir}]")
      
     def __prepare(self, ip):
         log_machine(ip, f'Preparing: started')

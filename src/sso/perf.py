@@ -1,10 +1,10 @@
 from sso.ssh import PSSH,SSH
-from sso.util import log_important
+from sso.util import log_important, log
 
 class Perf:
 
     def __init__(self, ip_list, user, ssh_options):
-        print(ip_list)
+        log(ip_list)
         self.updated = False
         self.ip_list = ip_list
         self.user = user
@@ -84,7 +84,7 @@ class Perf:
 
     def exec(self, command):
         log_important(f"Perf: started")
-        print(command)
+        log(command)
         ssh = SSH(self.ip_list[0], self.user, self.ssh_options)
         ssh.exec(f"""
                 cd /tmp

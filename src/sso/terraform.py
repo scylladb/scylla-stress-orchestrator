@@ -5,28 +5,28 @@ import subprocess
 import yaml
 
 from os import path
-
+from sso.util import log, call
 
 def apply(terraform_plan, options=None):
     option_str = "" 
     if options:
         option_str = options
         
-    print(f'Using terraform_plan [{terraform_plan}]')
+    log(f'Using terraform_plan [{terraform_plan}]')
     
     if not path.isdir(terraform_plan):
-        print(f"Could not find directory [{terraform_plan}]")
+        log(f"Could not find directory [{terraform_plan}]")
         exit(1)
 
     cmd = f'terraform -chdir={terraform_plan} init'
-    print(cmd)
-    exitcode = subprocess.call(cmd, shell=True)
+    log(cmd)
+    exitcode = call(cmd)
     if exitcode != 0:
         raise Exception(f'Failed terraform init, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
 
     cmd = f'terraform -chdir={terraform_plan} apply -auto-approve {option_str}'    
-    print(cmd)
-    exitcode = subprocess.call(cmd, shell=True)    
+    log(cmd)
+    exitcode = call(cmd)
     if exitcode != 0:
         raise Exception(f'Failed terraform apply, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
     
@@ -34,10 +34,10 @@ def apply(terraform_plan, options=None):
     
 
 def destroy(terraform_plan, options=None):
-    print(f'Using terraform_plan [{terraform_plan}]')
+    log(f'Using terraform_plan [{terraform_plan}]')
     
     if not path.isdir(terraform_plan):
-        print(f"Could not find directory [{terraform_plan}]")
+        log(f"Could not find directory [{terraform_plan}]")
         exit(1)
    
     option_str = "" 
@@ -45,8 +45,8 @@ def destroy(terraform_plan, options=None):
         option_str = options
     
     cmd = f'terraform -chdir={terraform_plan} destroy -auto-approve {option_str}'            
-    print(cmd)
-    exitcode = subprocess.call(cmd, shell=True)
+    log(cmd)
+    exitcode = call(cmd)
     
     if os.path.exists("environment.yml"):
         os.remove("environment.yml")

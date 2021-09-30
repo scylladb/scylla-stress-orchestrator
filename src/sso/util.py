@@ -1,7 +1,10 @@
+import os
+import shlex
+import subprocess
 from datetime import datetime
 from threading import Thread
 from threading import Lock, Condition
- 
+
 class Future:
     def __init__(self):
         self.__condition = Condition(Lock())
@@ -76,10 +79,27 @@ def find_java(properties):
 def join_all(*futures):
     for f in futures:
         f.join()
-      
+
+def call(cmd):
+    process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    while True:
+        output = process.stdout.readline().decode().rstrip("\n")
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            log(f'{output}')
+
+    return process.poll()
+
 def log_machine(ip, text):
     prefix = "    "+f"[{ip}]".ljust(17, " ")
-    print(f"{prefix} {text}")    
+    dt = datetime.now().strftime("%H:%M:%S")
+    print(f"[{dt}] {prefix} {text}")
+
+def log(text):
+    dt = datetime.now().strftime("%H:%M:%S")
+    print(f"[{dt}] {text}")
 
 def log_important(text):
     l = 80 -len(text)

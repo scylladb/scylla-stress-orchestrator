@@ -3,7 +3,7 @@ import time
 
 from datetime import datetime
 from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread,log_important, log_machine
+from sso.util import run_parallel, WorkerThread,log_important, log_machine, log
 
 class ScyllaBench:
 
@@ -44,7 +44,7 @@ class ScyllaBench:
             
         dt=datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         full_cmd = full_cmd + f" 2>&1 | tee -a scylla-bench-{dt}.log"    
-        print(full_cmd)
+        log(full_cmd)
         self.__new_ssh(ip).exec(full_cmd)
       
     def stress(self, command, load_index=None):
@@ -53,7 +53,7 @@ class ScyllaBench:
             run_parallel(self.__stress, [(ip, command) for ip in self.load_ips])
             log_important("scylla-bench: done")
         else:
-            print("using load_index " + str(load_index))
+            log("using load_index " + str(load_index))
             self.__stress(self.load_ips[load_index], command)
 
     def async_stress(self, command, load_index=None):
@@ -101,8 +101,8 @@ class ScyllaBench:
             f.join()
 
         duration_seconds = time.time() - start_seconds
-        print(f"Duration : {duration_seconds} seconds")
-        print(f"Insertion rate: {partition_count // duration_seconds} items/second")
+        log(f"Duration : {duration_seconds} seconds")
+        log(f"Insertion rate: {partition_count // duration_seconds} items/second")
         log_important(f"Inserting {partition_count} partitions: done")
 
     def __ssh(self, ip, command):
@@ -139,7 +139,7 @@ class ScyllaBench:
         log_important(f"Collecting results: started")
         run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
         log_important(f"Collecting results: done")
-        print(f"Results can be found in [{dir}]")
+        log(f"Results can be found in [{dir}]")
      
     def __prepare(self, ip):
         log_machine(ip, f'Preparing: started')
