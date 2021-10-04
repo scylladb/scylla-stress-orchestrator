@@ -1,17 +1,10 @@
 #!/bin/python3
 
-import sys
-import os
-
-sys.path.insert(1, f"{os.environ['SSO']}/src/")
-
-from time import sleep
-from sso import common
-from sso import terraform
-from sso import scylla
-from sso.scylla_bench import ScyllaBench
-from sso.common import Iteration
-from sso import prometheus
+from scyllaso import common
+from scyllaso import scylla
+from scyllaso.scylla_bench import ScyllaBench
+from scyllaso.common import Iteration
+from scyllaso import prometheus
 
 props = common.load_yaml('properties.yml')
 
@@ -50,5 +43,5 @@ prometheus.download_and_clear(env, props, iteration)
 
 # Automatically terminates the cluster.
 #terraform.destroy(props['terraform_plan'])
-print("Call 'unprovision-terraform' to destroy the created infrastructure!")
+print("Call 'unprovision_terraform.py' to destroy the created infrastructure!")
 

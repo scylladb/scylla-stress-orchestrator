@@ -2,8 +2,8 @@ import os
 import time
 
 from datetime import datetime
-from sso.ssh import SSH
-from sso.util import run_parallel, WorkerThread,log_important, log_machine, log
+from scyllaso.ssh import SSH
+from scyllaso.util import run_parallel, WorkerThread, log_important, log_machine, log
 
 class ScyllaBench:
 

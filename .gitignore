@@ -2,5 +2,6 @@
 __pycache__/
 venv/
 .idea/
+.eggs/
 dist/
-src/sso.egg-info/
+scyllaso.egg-info/

@@ -3,18 +3,19 @@ import selectors
 import subprocess
 import shlex
 import time
-from sso.util import run_parallel,log_machine,log,LogLevel
+from scyllaso.util import run_parallel, log_machine, log, LogLevel, WorkerThread
+
 
 # Parallel SSH
 class PSSH:
 
-    def __init__(self, 
-                 ip_list, 
-                 user, 
-                 ssh_options, 
-                 use_control_socket = True, 
-                 silent_seconds = 30, 
-                 log_ssh = False):
+    def __init__(self,
+                 ip_list,
+                 user,
+                 ssh_options,
+                 use_control_socket=True,
+                 silent_seconds=30,
+                 log_ssh=False):
         self.ip_list = ip_list
         self.user = user
         self.ssh_options = ssh_options
@@ -23,12 +24,12 @@ class PSSH:
         self.log_ssh = log_ssh
 
     def __new_ssh(self, ip):
-        return SSH(ip, 
-                   self.user, 
-                   self.ssh_options, 
-                   use_control_socket = self.use_control_socket,
-                   silent_seconds = self.silent_seconds, 
-                   log_ssh = self.log_ssh)
+        return SSH(ip,
+                   self.user,
+                   self.ssh_options,
+                   use_control_socket=self.use_control_socket,
+                   silent_seconds=self.silent_seconds,
+                   log_ssh=self.log_ssh)
 
     def __exec(self, ip, cmd):
         self.__new_ssh(ip).exec(cmd)
@@ -51,7 +52,7 @@ class PSSH:
             ssh.update()
 
         # can't get this to run correctly.
-        #run_parallel(self.__update, [ip for ip in self.ip_list])
+        # run_parallel(self.__update, [ip for ip in self.ip_list])
 
     def __install_one(self, ip, *packages):
         self.__new_ssh(ip).install_one(*packages)
@@ -72,14 +73,14 @@ class PSSH:
         run_parallel(self.__install, [(ip, *packages) for ip in self.ip_list])
 
     def __scp_from_remote(self, src, dst_dir, ip):
-        self.__new_ssh(ip).scp_from_remote(src,  os.path.join(dst_dir, ip))
+        self.__new_ssh(ip).scp_from_remote(src, os.path.join(dst_dir, ip))
 
     def scp_from_remote(self, src, dst_dir):
-        run_parallel(self.__scp_from_remote,  [(src, dst_dir, ip) for ip in self.ip_list])
+        run_parallel(self.__scp_from_remote, [(src, dst_dir, ip) for ip in self.ip_list])
 
     def __scp_to_remote(self, src, dst, ip):
-         self.__new_ssh(ip).scp_to_remote(src, dst)
-         
+        self.__new_ssh(ip).scp_to_remote(src, dst)
+
     def scp_to_remote(self, src, dst):
         run_parallel(self.__scp_to_remote, [(src, dst, ip) for ip in self.ip_list])
 
@@ -89,22 +90,22 @@ class PSSH:
     def set_governor(self, governor):
         run_parallel(self.__set_governor, [(ip, governor) for ip in self.ip_list])
 
-  
+
 class SSH:
 
-    def __init__(self, 
-                 ip, 
-                 user, 
-                 ssh_options, 
-                 silent_seconds=30, 
-                 use_control_socket = True, 
-                 log_ssh = False):
+    def __init__(self,
+                 ip,
+                 user,
+                 ssh_options,
+                 silent_seconds=30,
+                 use_control_socket=True,
+                 log_ssh=False):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options
         self.silent_seconds = silent_seconds
         self.log_ssh = log_ssh
-        self.prefix = "    "+f"[{self.ip}]".ljust(17, " ")
+        self.prefix = "    " + f"[{self.ip}]".ljust(17, " ")
         if use_control_socket:
             self.control_socket_file = f"/tmp/{self.user}@{self.ip}.socket"
         else:
@@ -112,11 +113,11 @@ class SSH:
 
     def __wait_for_connect(self):
         if self.control_socket_file:
-           if os.path.exists(self.control_socket_file): 
-               return
-           cmd = f'ssh -M -S {self.control_socket_file} -o ControlPersist=5m {self.ssh_options} {self.user}@{self.ip} exit'
+            if os.path.exists(self.control_socket_file):
+                return
+            cmd = f'ssh -M -S {self.control_socket_file} -o ControlPersist=5m {self.ssh_options} {self.user}@{self.ip} exit'
         else:
-           cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} exit'
+            cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} exit'
 
         exitcode = None
         for i in range(1, 300):
@@ -137,11 +138,11 @@ class SSH:
         return self.control_socket_file and os.path.exists(self.control_socket_file)
 
     def scp_from_remote(self, src, dst_dir):
-        os.makedirs(dst_dir, exist_ok=True)               
+        os.makedirs(dst_dir, exist_ok=True)
         cmd = f'scp {self.ssh_options} -r -q {self.user}@{self.ip}:{src} {dst_dir}'
         self.__scp(cmd)
 
-    def scp_to_remote(self, src, dst):        
+    def scp_to_remote(self, src, dst):
         cmd = f'scp {self.ssh_options} -r -q {src} {self.user}@{self.ip}:{dst}'
         self.__scp(cmd)
 
@@ -155,10 +156,10 @@ class SSH:
 
         socket = ""
         if self.__is_connected():
-           socket = f"-S {self.control_socket_file}"
+            socket = f"-S {self.control_socket_file}"
 
         cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
-        process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr = subprocess.PIPE)
+        process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         sel = selectors.DefaultSelector()
         sel.register(process.stdout, selectors.EVENT_READ)
@@ -260,9 +261,9 @@ class SSH:
             set -e
             sudo touch {file_path}
             if grep -q -E "^\\s*{property}\\s*{seperator}.*" {file_path}; then 
-                sudo sed -i "s/^\\s*{property}\\s*{seperator}.*/{property+seperator+value}/g" {file_path}
+                sudo sed -i "s/^\\s*{property}\\s*{seperator}.*/{property + seperator + value}/g" {file_path}
             else
-                sudo sh -c "'echo {property+seperator+value}' >> {file_path}"
+                sudo sh -c "'echo {property + seperator + value}' >> {file_path}"
             fi
         """)
 
@@ -298,4 +299,3 @@ class SSH:
                 echo "Governor [{governor}] is not supported"
             fi             
         """)
-
