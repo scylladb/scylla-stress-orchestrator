@@ -7,6 +7,8 @@ setup(
     author_email='peter.veentjer@scylladb.com',
     description='The Scylla Stress Orchestrator is Python 3 based framework for running various '
                 'benchmark tools including cassandra-stress and scylla-bench.',
+    long_description='The Scylla Stress Orchestrator is Python 3 based framework for running various '
+                'benchmark tools including cassandra-stress and scylla-bench.',
     long_description_content_type='text/markdown',
     url='https://github.com/scylladb/scylla-stress-orchestrator',
     packages=find_packages(),
@@ -17,7 +19,7 @@ setup(
     license_files=('LICENSE.txt',),
     classifiers=[
         'Programming Language :: Python :: 3',
-        'Operating System :: Linux',
+        'Operating System :: POSIX :: Linux',
     ],
     include_package_data=True,
     entry_points={

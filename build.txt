@@ -19,3 +19,15 @@ pip install /eng/scylla/scylla-stress-orchestrator/dist/scyllaso-0.1.tar.gz
 
 https://stackoverflow.com/questions/40695757/create-a-python-package-install-it-as-source-distribution-and-not-a-egg
 
+============== Releasing ==============
+
+Prerequisites:
+pip install twine
+
+Make the release build:
+python setup.py sdist
+
+Uploading
+twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+
+https://realpython.com/pypi-publish-python-package/

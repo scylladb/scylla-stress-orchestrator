@@ -9,9 +9,9 @@ License: UNKNOWN
 Project-URL: Bug Tracker, https://github.com/scylladb/scylla-stress-orchestrator/issues
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
-Classifier: Operating System :: Linux
+Classifier: Operating System :: POSIX :: Linux
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 
-UNKNOWN
+The Scylla Stress Orchestrator is Python 3 based framework for running various benchmark tools including cassandra-stress and scylla-bench.
 
