@@ -1,8 +1,6 @@
 from scyllaso.ssh import SSH
 from scyllaso.util import log_important
 
-SCYLLA_MONITORING_VERSION = "3.8"
-
 
 def download(env, props, iteration):
     prometheus = Prometheus(env['prometheus_public_ip'][0],
@@ -25,10 +23,11 @@ def download_and_clear(env, props, iteration):
 
 class Prometheus:
 
-    def __init__(self, ip, user, ssh_options):
+    def __init__(self, ip, user, ssh_options, scylla_monitoring_version="3.8"):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options
+        self.scylla_monitoring_version = scylla_monitoring_version
 
     def data_dir_upload(self, dir):
         log_important("Prometheus upload: started")
@@ -41,7 +40,7 @@ class Prometheus:
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.exec(
             f"""
-            cd scylla-monitoring-scylla-monitoring-{SCYLLA_MONITORING_VERSION}
+            cd scylla-monitoring-scylla-monitoring-{self.scylla_monitoring_version}
             ./kill-all.sh
             """)
         log_important("Prometheus stop: done")
@@ -52,7 +51,7 @@ class Prometheus:
         ssh.exec(
             f"""
             mkdir -p data
-            cd scylla-monitoring-scylla-monitoring-{SCYLLA_MONITORING_VERSION}
+            cd scylla-monitoring-scylla-monitoring-{self.scylla_monitoring_version}
             ./start-all.sh -v 4.3 -d ../data
             """)
         log_important("Prometheus start: done")
