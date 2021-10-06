@@ -8,14 +8,11 @@ python setup.py sdist
 
 pip install sdist .
 
-======= not confirmed working==============
 
-install for local usage
+Installing the distribution locally:
 
-python setup.py sdist
-
-# THis works if you call it from a different directory
-pip install /eng/scylla/scylla-stress-orchestrator/dist/scyllaso-0.1.tar.gz
+# This works if you call it from a different directory
+pip install --force-reinstall /eng/scylla/scylla-stress-orchestrator/dist/scyllaso-0.1.dev2.tar.gz
 
 https://stackoverflow.com/questions/40695757/create-a-python-package-install-it-as-source-distribution-and-not-a-egg
 

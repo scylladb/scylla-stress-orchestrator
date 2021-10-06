@@ -23,11 +23,10 @@ def download_and_clear(env, props, iteration):
 
 class Prometheus:
 
-    def __init__(self, ip, user, ssh_options, scylla_monitoring_version="3.8.2", scylla_version="4.4"):
+    def __init__(self, ip, user, ssh_options, scylla_version="4.4"):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options
-        self.scylla_monitoring_version = scylla_monitoring_version
         self.scylla_version = scylla_version
 
     def data_dir_upload(self, dir):
@@ -41,7 +40,9 @@ class Prometheus:
         ssh = SSH(self.ip, self.user, self.ssh_options)
         ssh.exec(
             f"""
-            cd scylla-monitoring-{self.scylla_monitoring_version}
+            dir=$(find . -maxdepth 1 -type d -name "scylla-monitoring*" -print -quit)   
+            echo "directory [$dir]"         
+            cd $dir
             ./kill-all.sh
             """)
         log_important("Prometheus stop: done")
@@ -52,7 +53,8 @@ class Prometheus:
         ssh.exec(
             f"""
             mkdir -p data
-            cd scylla-monitoring-{self.scylla_monitoring_version}
+            dir=$(find . -maxdepth 1 -type d -name "scylla-monitoring*" -print -quit)
+            cd $dir            
             ./start-all.sh -v {self.scylla_version} -d ../data
             """)
         log_important("Prometheus start: done")

@@ -159,6 +159,9 @@ class SSH:
             socket = f"-S {self.control_socket_file}"
 
         cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
+        if self.log_ssh:
+            log_machine(self.ip, cmd)
+
         process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         sel = selectors.DefaultSelector()
