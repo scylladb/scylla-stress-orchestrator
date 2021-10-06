@@ -14,14 +14,14 @@ def cli():
                         help="An extra id to make resources unique. By default the username is used.", nargs='?')
     args = parser.parse_args()
 
-    dir_name = args.name
+    name = args.name
     if args.resourceid:
         resourceid = args.resourceid
     else:
         resourceid = getpass.getuser()
 
     cwd = os.getcwd()
-    target_dir = os.path.join(cwd, dir_name)
+    target_dir = os.path.join(cwd, name)
 
     if os.path.exists(target_dir):
         print(f"Can't generate benchmark: dir/file [{target_dir}] already exists")
