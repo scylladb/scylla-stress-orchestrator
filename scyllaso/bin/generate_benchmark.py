@@ -8,10 +8,18 @@ from scyllaso.bin import make_key
 
 def cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument("name", help="The name of the benchmark.")
+    parser.add_argument("name",
+                        help="The name of the benchmark.")
+    parser.add_argument("--resourceid",
+                        help="An extra id to make resources unique. By default the username is used.", nargs='?')
     args = parser.parse_args()
 
     dir_name = args.name
+    if args.resourceid:
+        resourceid = args.resourceid
+    else:
+        resourceid = getpass.getuser()
+
     cwd = os.getcwd()
     target_dir = os.path.join(cwd, dir_name)
 
@@ -23,7 +31,7 @@ def cli():
 
     os.chdir(target_dir)
     make_key.cli()
-    process_templates(target_dir)
+    process_templates(target_dir, resourceid)
     os.chdir(cwd)
 
 
@@ -37,8 +45,7 @@ def copy_template(target_dir):
         shutil.rmtree(python_cache)
 
 
-def process_templates(target_dir):
-    username = getpass.getuser()
+def process_templates(target_dir, resourceid):
     for subdir, dirs, files in os.walk(target_dir):
         for filename in files:
             filepath = subdir + os.sep + filename
@@ -47,7 +54,7 @@ def process_templates(target_dir):
                 old_text = f.read()
                 f.close()
 
-                new_text = old_text.replace("<name>", username)
+                new_text = old_text.replace("<resourceid>", resourceid)
                 f = open(filepath, 'w')
                 f.write(new_text)
                 f.close()

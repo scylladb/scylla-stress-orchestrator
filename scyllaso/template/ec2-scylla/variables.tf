@@ -1,9 +1,9 @@
 variable "owner" {
-    default = "sso.<name>"
+    default = "sso.<resourceid>"
 }
 
 variable "placement_group_name" {
-    default = "sso.pg-<name>"
+    default = "sso.pg-<resourceid>"
 }
 
 variable "region" {
@@ -11,7 +11,7 @@ variable "region" {
 }
  
 variable "keypair_name" {
-    default = "sso.keypair-<name>"
+    default = "sso.keypair-<resourceid>"
 }
 
 variable "public_key_location" {
@@ -29,7 +29,7 @@ variable "cluster_size" {
 }
 
 variable "cluster_sg_name" {
-    default = "sso.cluster-sg-<name>"
+    default = "sso.cluster-sg-<resourceid>"
 }
 
 variable "cluster_instance_type" {
@@ -37,7 +37,7 @@ variable "cluster_instance_type" {
 }
 
 variable "cluster_name" {
-    default = "sso.cluster-<name>"
+    default = "sso.cluster-<resourceid>"
 }
 
 variable "cluster_user" {
@@ -58,11 +58,11 @@ variable "scylla_ami" {
 # ============ Prometheus instance ===============
 
 variable "prometheus_name" {
-    default = "sso.prometheus-<name>"
+    default = "sso.prometheus-<resourceid>"
 }
 
 variable "prometheus_sg_name" {
-    default = "sso.prometheus-sg-<name>"
+    default = "sso.prometheus-sg-<resourceid>"
 }
 
 variable "prometheus_instance_type" {
@@ -85,11 +85,11 @@ variable "loadgenerator_instance_type" {
 }
 
 variable "loadgenerator_name" {
-    default = "sso.loadgenerator-<name>"
+    default = "sso.loadgenerator-<resourceid>"
 }
 
 variable "loadgenerator_sg_name" {
-    default = "sso.loadgenerator-sg-<name>"
+    default = "sso.loadgenerator-sg-<resourceid>"
 }
 
 variable "loadgenerator_size" {
