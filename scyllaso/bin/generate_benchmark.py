@@ -37,8 +37,9 @@ def cli():
 
 def copy_template(target_dir):
     module_dir = os.path.dirname(pkg_resources.resource_filename('scyllaso', '__init__.py'))
-    template_dir = os.path.join(module_dir, "template")
-    shutil.copytree(template_dir, target_dir)
+    benchmarks_dir = os.path.join(module_dir, "benchmarks")
+    default_dir = os.path.join(benchmarks_dir, "default")
+    shutil.copytree(default_dir, target_dir)
 
     python_cache = os.path.join(target_dir, "__pycache__")
     if os.path.exists(python_cache):

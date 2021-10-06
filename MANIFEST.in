@@ -1,2 +1,2 @@
 recursive-include scyllaso/lib *
-recursive-include scyllaso/template *
+recursive-include scyllaso/benchmarks *
