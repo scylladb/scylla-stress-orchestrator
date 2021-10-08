@@ -15,7 +15,7 @@ class Iteration:
     # The purpose of the experimental flag is to modify the name of the trial directory to easily
     # weed out the experimental runs from non experimental ones. Otherwise it is easy to run in a 
     # messed up history where it isn't clear what is experimental and what isn't.
-    def __init__(self, trial_name, description=None, experimental=False, ignore_git=False):
+    def __init__(self, trial_name, description=None, experimental=False, ignore_git=True):
         self.trials_dir_name = "trials"
         self.trials_dir = os.path.join(os.getcwd(), self.trials_dir_name)
         self.trial_name = trial_name
