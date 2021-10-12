@@ -105,25 +105,34 @@ class SSH:
         self.ssh_options = ssh_options
         self.silent_seconds = silent_seconds
         self.log_ssh = log_ssh
-        self.prefix = "    " + f"[{self.ip}]".ljust(17, " ")
         if use_control_socket:
             self.control_socket_file = f"/tmp/{self.user}@{self.ip}.socket"
         else:
             self.control_socket_file = None
 
     def __wait_for_connect(self):
+        args = f"-o ConnectTimeout=1 -o ConnectionAttempts=1 {self.ssh_options}"
         if self.control_socket_file:
             if os.path.exists(self.control_socket_file):
                 return
-            cmd = f'ssh -M -S {self.control_socket_file} -o ControlPersist=5m {self.ssh_options} {self.user}@{self.ip} exit'
-        else:
-            cmd = f'ssh {self.ssh_options} {self.user}@{self.ip} exit'
+            args = f"{args} -M -S {self.control_socket_file} -o ControlPersist=5m"
+        cmd = f'ssh {args} {self.user}@{self.ip} exit'
 
         exitcode = None
-        for i in range(1, 300):
-            if i > self.silent_seconds:
-                log(f"{self.prefix} Connect to {self.ip}")
-                exitcode = subprocess.call(cmd, shell=True)
+        max_attempts = 300
+        for attempt in range(1, max_attempts):
+            if attempt > self.silent_seconds:
+                log_machine(self.ip, f'Trying to connect, attempt [{attempt}/{max_attempts}], command [{cmd}]')
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                if result.stdout:
+                    lines = result.stdout.splitlines()
+                    for line in lines:
+                        log_machine(self.ip, line, log_level=LogLevel.info)
+                if result.stderr:
+                    lines = result.stderr.splitlines()
+                    for line in lines:
+                        log_machine(self.ip, line, log_level=LogLevel.warning)
+                exitcode = result.returncode
             else:
                 exitcode = subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
