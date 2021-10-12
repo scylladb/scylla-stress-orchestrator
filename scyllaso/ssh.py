@@ -3,7 +3,7 @@ import selectors
 import subprocess
 import shlex
 import time
-from scyllaso.util import run_parallel, log_machine, log, LogLevel, WorkerThread
+from scyllaso.util import run_parallel, log_machine, LogLevel, WorkerThread
 
 
 # Parallel SSH
