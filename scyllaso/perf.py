@@ -1,5 +1,6 @@
-from scyllaso.ssh import PSSH,SSH
+from scyllaso.ssh import PSSH, SSH
 from scyllaso.util import log_important, log
+
 
 class Perf:
 
@@ -14,20 +15,20 @@ class Perf:
         return PSSH(self.ip_list, self.user, self.ssh_options)
 
     def install(self):
-        #pssh = self.pssh()
-        #pssh.exec
+        # pssh = self.pssh()
+        # pssh.exec
         self.install_perf()
         self.install_flamegraph()
         self.install_debuginfo()
-        #pssf.exec("touch /tmp/perf_installed")
+        # pssf.exec("touch /tmp/perf_installed")
 
     def install_debuginfo(self):
         pssh = self.pssh()
-        
+
         if not self.updated:
             pssh.update()
             self.updated = True
-        
+
         log_important("Installing debuginfo: started")
         pssh.try_install("scylla_debuginfo")
         log_important("Installing debuginfo: done")
@@ -35,13 +36,13 @@ class Perf:
     def install_perf(self):
         log_important("Perf install: started")
         pssh = self.pssh()
-        
+
         if not self.updated:
             pssh.update()
             self.updated = True
-       
+
         # This part sucks.. Should no be a dependency on a particular version 
-        pssh.install_one("perf", "linux-tools-5.4.0-1035-aws")        
+        pssh.install_one("perf", "linux-tools-5.4.0-1035-aws")
         log_important("Perf install: done")
 
     def install_flamegraph(self):
@@ -64,7 +65,7 @@ class Perf:
                 """)
         log_important("Perf install flamegraph: done")
 
-    def flamegraph_cpu(self, cpu, dir, duration_seconds=60, args = "--call-graph lbr -F99", output="flamegraph"):
+    def flamegraph_cpu(self, cpu, dir, duration_seconds=60, args="--call-graph lbr -F99", output="flamegraph"):
         data_file = f"{output}.data"
         flamegraph_file = f"{output}.svg"
         cmd = f"--output {data_file} --cpu {cpu} {args} sleep {duration_seconds}"
@@ -92,7 +93,7 @@ class Perf:
                 """)
         log_important(f"Perf: done")
 
-    def collect_flamegraph(self, dir, data_file = "perf.data", flamegraph_file = "flamegraph.svg"):
+    def collect_flamegraph(self, dir, data_file="perf.data", flamegraph_file="flamegraph.svg"):
         log_important(f"Perf collecting flamegraph: started")
         ssh = SSH(self.ip_list[0], self.user, self.ssh_options)
         # --no-online

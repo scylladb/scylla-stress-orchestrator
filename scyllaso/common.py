@@ -32,7 +32,7 @@ class Iteration:
                 os.makedirs(self.dir)
                 break
             time.sleep(0.5)
-           
+
         if description:
             desc_file = os.path.join(self.dir, "description.txt")
             with open(desc_file, "w") as text_file:
@@ -47,22 +47,23 @@ class Iteration:
                 os.remove(latest_dir)
             os.symlink(self.dir, latest_dir, target_is_directory=True)
 
-        if not ignore_git:    
+        if not ignore_git:
             exitcode = subprocess.call("git status", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if exitcode == 0:
                 if not experimental:
                     d = subprocess.check_output(" [[ -z $(git status -s) ]] || echo 'dirty'", shell=True).decode()
                     if d.startswith("dirty"):
-                        print("The current working directory is dirty, so can't store the git HEAD in the iteration directory.")
+                        print(
+                            "The current working directory is dirty, so can't store the git HEAD in the iteration directory.")
                         exit(1)
-            
+
                     output = subprocess.check_output("git log --pretty=format:'%h' -n 1", shell=True).decode()
                     git_file = os.path.join(self.dir, "HEAD")
                     with open(git_file, "w") as git_file:
                         print(output, file=git_file)
 
         print(f'Using iteration directory [{self.dir}]')
-    
+
 
 def __collect_ec2_metadata(ip, ssh_user, ssh_options, dir):
     dest_dir = os.path.join(dir, ip)

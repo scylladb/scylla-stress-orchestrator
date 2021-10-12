@@ -3,6 +3,7 @@ import time
 
 from scyllaso import common
 
+
 def env_to_inventory():
     props = common.load_yaml('properties.yml')
     cluster_user = props['cluster_user']
@@ -13,7 +14,7 @@ def env_to_inventory():
     cluster_public_ips = env['cluster_public_ips']
 
     key = "/eng/scylla/scylla-ansible-roles/ansible-scylla-node/foo/key"
-    
+
     inventory = "#inventory.ini\n"
     inventory = "[scylla-manager]\n"
     prometheus_public_ip = env['prometheus_public_ip']
@@ -21,11 +22,11 @@ def env_to_inventory():
 
     inventory += "[scylla]\n"
     extra = f"ansible_connection=ssh ansible_user={cluster_user} ansible_ssh_private_key_file={key} dc=us-east1 rack=rack-b"
-    
+
     for public_ip in cluster_public_ips:
         line = f"{public_ip} {extra}\n"
         inventory += line
 
     inventory_file = open('inventory.ini', 'w')
     inventory_file.write(inventory)
-    inventory_file.close()    
+    inventory_file.close()

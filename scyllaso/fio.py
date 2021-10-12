@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from scyllaso.ssh import SSH
-from scyllaso.util import run_parallel,log_important,log_machine,log
+from scyllaso.util import run_parallel, log_important, log_machine, log
 
 
 class Fio:
@@ -73,5 +73,3 @@ class Fio:
         log_important(f"fio download: started")
         run_parallel(self.__download, [(ip, dir) for ip in self.ips])
         log_important(f"fio download: done")
-
-

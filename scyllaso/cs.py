@@ -98,12 +98,15 @@ class CassandraStress:
         population_commands = []
         # FIXME - cleanup
         for i in range(len(range_points) - 1):
-            population_commands.append(f' n={range_points[i + 1] - range_points[i] + 1} -pop seq={range_points[i]}..{range_points[i + 1]} ')
+            population_commands.append(
+                f' n={range_points[i + 1] - range_points[i] + 1} -pop seq={range_points[i]}..{range_points[i + 1]} ')
 
         print(population_commands)
 
         log_important("Cassandra-Stress: started")
-        run_parallel(self.__stress, [(ip, 10 if i > 0 else 0, command_part1 + pop_command + command_part2) for i, (ip, pop_command) in enumerate(zip(self.load_ips, population_commands))])
+        run_parallel(self.__stress,
+                     [(ip, 10 if i > 0 else 0, command_part1 + pop_command + command_part2) for i, (ip, pop_command) in
+                      enumerate(zip(self.load_ips, population_commands))])
         log_important("Cassandra-Stress: done")
 
     def async_stress(self, command, load_index=None):

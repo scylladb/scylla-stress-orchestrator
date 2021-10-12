@@ -24,7 +24,8 @@ def apply(terraform_plan, workspace=None, options=""):
         log(cmd)
         exitcode = call(cmd, shell=True, split=False)
         if exitcode != 0:
-            raise Exception(f'Failed terraform workspace, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
+            raise Exception(
+                f'Failed terraform workspace, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
         profile_file = os.path.join(os.path.abspath(os.getcwd()), workspace + ".yml")
         if path.isfile(profile_file):
             options = f'{options} -var="yaml_configuration_path={profile_file}"'
@@ -52,7 +53,8 @@ def destroy(terraform_plan, workspace=None, options=""):
         log(cmd)
         exitcode = call(cmd)
         if exitcode != 0:
-            raise Exception(f'Failed terraform workspace, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
+            raise Exception(
+                f'Failed terraform workspace, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
         profile_file = os.path.join(os.path.abspath(os.getcwd()), workspace + ".yml")
         if path.isfile(profile_file):
             options = f'{options} -var="yaml_configuration_path={profile_file}"'
@@ -73,7 +75,8 @@ def destroy(terraform_plan, workspace=None, options=""):
         print(cmd)
         exitcode = call(cmd, shell=True, split=False)
         if exitcode != 0:
-            raise Exception(f'Failed terraform workspace, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
+            raise Exception(
+                f'Failed terraform workspace, plan [{terraform_plan}], exitcode={exitcode} command=[{cmd}])')
 
 
 # Extracts all the output from a sso_terraform directory and places it into an environment.yaml

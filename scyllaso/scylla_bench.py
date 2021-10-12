@@ -5,6 +5,7 @@ from datetime import datetime
 from scyllaso.ssh import SSH
 from scyllaso.util import run_parallel, WorkerThread, log_important, log_machine, log
 
+
 class ScyllaBench:
 
     def __init__(self, load_ips, properties, performance_governor=True):
@@ -24,7 +25,7 @@ class ScyllaBench:
             ssh.set_governor("performance")
 
         ssh.install("golang")
-        #ssh.exec("go get github.com/scylladb/scylla-bench")
+        # ssh.exec("go get github.com/scylladb/scylla-bench")
 
         ssh.exec(f"""
                   git clone https://github.com/scylladb/scylla-bench
@@ -41,12 +42,12 @@ class ScyllaBench:
 
     def __stress(self, ip, cmd):
         full_cmd = f'go/bin/scylla-bench {cmd}'
-            
-        dt=datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        full_cmd = full_cmd + f" 2>&1 | tee -a scylla-bench-{dt}.log"    
+
+        dt = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        full_cmd = full_cmd + f" 2>&1 | tee -a scylla-bench-{dt}.log"
         log(full_cmd)
         self.__new_ssh(ip).exec(full_cmd)
-      
+
     def stress(self, command, load_index=None):
         if load_index is None:
             log_important("scylla-bench: started")
@@ -61,12 +62,12 @@ class ScyllaBench:
         thread.start()
         return thread.future
 
-    def insert(self, 
-               partition_count, 
-               nodes, 
+    def insert(self,
+               partition_count,
+               nodes,
                partition_offset=0,
-               concurrency=64, 
-               clustering_row_count=1, 
+               concurrency=64,
+               clustering_row_count=1,
                extra_args=""):
         log_important(f"Inserting {partition_count} partitions")
         start_seconds = time.time()
@@ -140,7 +141,7 @@ class ScyllaBench:
         run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
         log_important(f"Collecting results: done")
         log(f"Results can be found in [{dir}]")
-     
+
     def __prepare(self, ip):
         log_machine(ip, f'Preparing: started')
         ssh = self.__new_ssh(ip)
