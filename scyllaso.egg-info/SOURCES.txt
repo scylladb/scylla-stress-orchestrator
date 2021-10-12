@@ -4,7 +4,6 @@ MANIFEST.in
 README.md
 build.txt
 pyproject.toml
-setup.cfg.bak
 setup.py
 scyllaso/__init__.py
 scyllaso/ansible.py

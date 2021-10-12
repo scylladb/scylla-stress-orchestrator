@@ -1,15 +1,15 @@
-import sys
+import argparse
 import os
 from scyllaso import util
 
 
 def cli():
-    if len(sys.argv) == 1:
-        print("No data directory")
-        exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("dir", help="The directory containing the prometheus data", nargs=1)
+    args = parser.parse_args()
 
     old_wd = os.getcwd()
-    data_dir = sys.argv[1]
+    data_dir = args.dir
 
     if not os.path.isabs(data_dir):
         data_dir = os.path.join(old_wd, data_dir)
