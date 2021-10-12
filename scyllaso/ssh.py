@@ -185,7 +185,7 @@ class SSH:
                     if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
                         return
                     else:
-                        raise Exception(f"Failed to execute {cmd}, exitcode={exitcode}")
+                        raise Exception(f"Failed to execute [{cmd}], exitcode={exitcode}")
                 lines = data.splitlines()
                 log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.warning
                 for line in lines:
