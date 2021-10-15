@@ -5,11 +5,11 @@
 # export SSO=<PATH_TO_ORCHESTRATOR_ROOT>
 # export PATH=$SSO/bin:$PATH
 # cd cassandra4-scylla-comparison
-# AWS_ACCESS_KEY_ID=XXX AWS_SECRET_ACCESS_KEY=YYY provision-terraform ec2 sanity_check_profile_1x_scylla_compaction
+# AWS_ACCESS_KEY_ID=XXX AWS_SECRET_ACCESS_KEY=YYY provision_terraform ec2 --workspace sanity_check_profile_1x_scylla_compaction
 ##  NOTE: Now monitor the output (human interaction will be needed)
 # yes yes | ./benchmark_major_compaction.py sanity_check_profile_1x_scylla_compaction
 # ./download_prometheus.py sanity_check_profile_1x_scylla_compaction
-# AWS_ACCESS_KEY_ID=XXX AWS_SECRET_ACCESS_KEY=YYY unprovision-terraform ec2 sanity_check_profile_1x_scylla_compaction
+# AWS_ACCESS_KEY_ID=XXX AWS_SECRET_ACCESS_KEY=YYY unprovision_terraform ec2 --workspace sanity_check_profile_1x_scylla_compaction
 ##  NOTE: Now monitor the output (human interaction will be needed)
 
 region: us-east-2
