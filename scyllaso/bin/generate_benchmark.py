@@ -9,12 +9,22 @@ from scyllaso.bin import make_key
 def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("name",
-                        help="The name of the benchmark.")
+                        help="The name of the benchmark.", nargs='?')
     parser.add_argument("--template",
                         help="The name of the benchmark template.", default="default")
     parser.add_argument("--resourceid",
                         help="An extra id to make resources unique. By default the username is used.", nargs='?')
+    parser.add_argument("--list", help="List available benchmark templates", action='store_true')
     args = parser.parse_args()
+
+    if args.list:
+        print("default")
+        print("cassandra4-scylla-comparison")
+        return
+
+    if not args.name:
+        print("The name of the benchmark needs to be provided")
+        exit(0)
 
     name = args.name
     if args.resourceid:
