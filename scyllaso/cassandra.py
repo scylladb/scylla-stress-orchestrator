@@ -1,6 +1,6 @@
 from datetime import datetime
 from scyllaso.ssh import PSSH, SSH
-from scyllaso.util import run_parallel, find_java, log_important, log_machine
+from scyllaso.util import run_parallel, find_java, log, log_important, log_machine
 from scyllaso.network_wait import wait_for_cql_start
 from scyllaso.raid import RAID
 
@@ -34,7 +34,7 @@ class Cassandra:
     def __install(self, ip):
         ssh = self.__new_ssh(ip)
         ssh.update()
-        log_machine("Installing Cassandra: started", ip)
+        log_machine(ip, "Installing Cassandra: started")
         ssh.install_one('openjdk-16-jdk', 'java-16-openjdk')
         ssh.install('wget')
         private_ip = self.__find_private_ip(ip)
@@ -67,7 +67,7 @@ class Cassandra:
             sudo sed -i \"s/listen_address:.*/listen_address: {private_ip} /g\" conf/cassandra.yaml
             sudo sed -i \"s/rpc_address:.*/rpc_address: {private_ip} /g\" conf/cassandra.yaml
         """)
-        log_machine("Installing Cassandra: done", ip)
+        log_machine(ip, "Installing Cassandra: done")
 
     def __find_private_ip(self, public_ip):
         index = self.cluster_public_ips.index(public_ip)
@@ -92,7 +92,7 @@ class Cassandra:
         log_important("Installing Cassandra: done")
 
     def __start(self, ip):
-        log_machine("Starting Cassandra: started", ip)
+        log_machine(ip, "Starting Cassandra: started")
         ssh = self.__new_ssh(ip)
         path_prefix = 'cassandra-raid/' if self.setup_raid else './'
         ssh.exec(f"""
@@ -108,30 +108,31 @@ class Cassandra:
             fi
             bin/cassandra -p cassandra.pid 2>&1 >> cassandra.out &
             """)
-        log_machine("Starting Cassandra: done", ip)
+        log_machine(ip, "Starting Cassandra: done")
 
     def __start_exporter(self, ip):
-        print(f'    [{ip}] Starting exporter')
+        log_machine(ip, 'Starting exporter')
         ssh = self.__new_ssh(ip)
         ssh.exec(f"""
             java -Dorg.slf4j.simpleLogger.defaultLogLevel=trace -jar ~/cassandra_exporter-2.3.5.jar ~/config.yml >> ~/cassandra_exporter.out 2>&1 &
             """)
-        print(f'    [{ip}] Starting exporter: done')
+        log_machine(ip, 'Starting exporter: done')
 
     def append_env_configuration(self, configuration):
-        print(f"Appending cassandra-env.sh configuration to nodes {self.cluster_public_ips}: {configuration}")
+        log(f"Appending cassandra-env.sh configuration to nodes {self.cluster_public_ips}: {configuration}")
         pssh = PSSH(self.cluster_public_ips, self.ssh_user, self.properties['ssh_options'])
         path_prefix = 'cassandra-raid/' if self.setup_raid else './'
+        log("configuration["+configuration+"]")
         pssh.exec(
-            f"echo '{configuration}' >> {path_prefix}apache-cassandra-{self.cassandra_version}/conf/cassandra-env.sh")
-        print(f"echo '{configuration}' >> {path_prefix}apache-cassandra-{self.cassandra_version}/conf/cassandra-env.sh")
+            f'''echo '{configuration}' >> {path_prefix}apache-cassandra-{self.cassandra_version}/conf/cassandra-env.sh''')
+        log(f"echo '{configuration}' >> {path_prefix}apache-cassandra-{self.cassandra_version}/conf/cassandra-env.sh")
 
     def start(self):
         log_important(f"Starting Cassandra nodes {self.cluster_public_ips}")
         for public_ip in self.cluster_public_ips:
             self.__start(public_ip)
             wait_for_cql_start(public_ip)
-            log_important("Node finished bootstrapping at:", datetime.now().strftime("%H:%M:%S"), public_ip)
+            log_machine(public_ip, f"""Node finished bootstrapping at {datetime.now().strftime("%H:%M:%S")}""")
             self.__start_exporter(public_ip)
         log_important(f"Starting Cassandra nodes {self.cluster_public_ips}: done")
 
@@ -152,7 +153,7 @@ class Cassandra:
             fi
             """)
 
-        print(f'    [{ip}] Stopping Cassandra: done')
+        log_machine(ip, 'Stopping Cassandra: done')
 
     def stop(self, load_index=None, erase_data=False):
         if load_index is None:

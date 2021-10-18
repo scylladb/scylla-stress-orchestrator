@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from scyllaso.ssh import SSH
-from scyllaso.util import run_parallel, log_important
+from scyllaso.util import run_parallel, log, log_important, log_machine
 
 
 class DiskExplorer:
@@ -16,7 +16,7 @@ class DiskExplorer:
         return SSH(ip, self.ssh_user, self.ssh_options)
 
     def __install(self, ip):
-        print(f'    [{ip}] Installing disk-explorer: started')
+        log_machine(ip, 'Installing disk-explorer: started')
         ssh = self.__new_ssh(ip)
         ssh.update()
         ssh.install('git', 'fio', 'python3', 'python3-pip')
@@ -25,7 +25,7 @@ class DiskExplorer:
             rm -fr diskplorer
             git clone -q https://github.com/scylladb/diskplorer.git
             """)
-        print(f'    [{ip}] Installing disk-explorer: done')
+        log_machine(ip, 'Installing disk-explorer: done')
 
     def install(self):
         log_important("Disk Explorer Installation: started")
@@ -33,7 +33,7 @@ class DiskExplorer:
         log_important("Disk Explorer Installation: done")
 
     def __run(self, ip, cmd):
-        print(f'    [{ip}] Run: started')
+        log_machine(ip, 'Run: started')
         ssh = self.__new_ssh(ip)
         ssh.exec('rm -fr diskplorer/*.svg')
         ssh.exec(f'rm -fr diskplorer/fiotest.tmp')
@@ -49,11 +49,11 @@ class DiskExplorer:
             """)
         # the file is 100 GB; so we want to remove it.
         ssh.exec(f'rm -fr diskplorer/fiotest.tmp')
-        print(f'    [{ip}] Run: done')
+        log_machine(ip, 'Run: done')
 
     def run(self, command):
         log_important(f'Disk Explorer run: started [{datetime.now().strftime("%H:%M:%S")}]')
-        print(f"python3 diskplorer.py {command}")
+        log(f"python3 diskplorer.py {command}")
         run_parallel(self.__run, [(ip, command) for ip in self.ips])
         log_important(f'Disk Explorer run: done [{datetime.now().strftime("%H:%M:%S")}]')
 
@@ -62,15 +62,15 @@ def __download(self, ip, dir):
     dest_dir = os.path.join(dir, ip)
     os.makedirs(dest_dir, exist_ok=True)
 
-    print(f'    [{ip}] Downloading to [{dest_dir}]')
+    log_machine(ip, f'[{ip}] Downloading to [{dest_dir}]')
     self.__new_ssh(ip).scp_from_remote(f'diskplorer/*.{{svg,csv}}', dest_dir)
     if self.capture_lsblk:
         self.__new_ssh(ip).scp_from_remote(f'lsblk.out', dest_dir)
-    print(f'    [{ip}] Downloading to [{dest_dir}] done')
+    log_machine(ip, f'Downloading to [{dest_dir}] done')
 
 
 def download(self, dir):
     log_important("Disk Explorer Download: started")
     run_parallel(self.__download, [(ip, dir) for ip in self.ips])
     log_important("Disk Explorer Download: done")
-    print(f"Results can be found in [{dir}]")
+    log(f"Results can be found in [{dir}]")

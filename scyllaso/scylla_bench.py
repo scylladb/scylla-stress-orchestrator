@@ -12,9 +12,14 @@ class ScyllaBench:
         self.properties = properties
         self.load_ips = load_ips
         self.performance_governor = performance_governor
+        self.ssh_user = properties.get('loadgenerator_user')
+
+        # needed for compatibility reasons.
+        if not self.ssh_user:
+            self.ssh_user = properties.get('load_generator_user')
 
     def __new_ssh(self, ip):
-        return SSH(ip, self.properties['load_generator_user'], self.properties['ssh_options'])
+        return SSH(ip, self.ssh_user, self.properties['ssh_options'])
 
     def __install(self, ip):
         ssh = self.__new_ssh(ip)

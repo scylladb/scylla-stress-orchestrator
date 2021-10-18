@@ -1,6 +1,6 @@
 ---
 cassandra_version: 3.11.10
-load_generator_user: ubuntu
+loadgenerator_user: ubuntu
 terraform_plan: ec2-scylla
 ssh_options: -i key -o StrictHostKeyChecking=no -o ConnectTimeout=60
 # Set this property if you want to control the JVM being used.

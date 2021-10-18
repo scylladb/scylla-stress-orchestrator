@@ -1,7 +1,6 @@
 import os
 import selectors
 import subprocess
-import shlex
 import time
 from scyllaso.util import run_parallel, log_machine, LogLevel, WorkerThread
 
@@ -163,15 +162,18 @@ class SSH:
     def exec(self, command, ignore_errors=False):
         self.__wait_for_connect()
 
-        socket = ""
+        cmd_list = ["ssh"]
         if self.__is_connected():
-            socket = f"-S {self.control_socket_file}"
+            cmd_list.append("-S")
+            cmd_list.append(f"{self.control_socket_file}")
+        cmd_list.extend(self.ssh_options.split())
+        cmd_list.append(f"{self.user}@{self.ip}")
+        cmd_list.append(command)
 
-        cmd = f'ssh {socket} {self.ssh_options} {self.user}@{self.ip} \'{command}\''
         if self.log_ssh:
-            log_machine(self.ip, cmd)
+            log_machine(self.ip, cmd_list)
 
-        process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         sel = selectors.DefaultSelector()
         sel.register(process.stdout, selectors.EVENT_READ)
@@ -185,7 +187,7 @@ class SSH:
                     if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
                         return
                     else:
-                        raise Exception(f"Failed to execute [{cmd}], exitcode={exitcode}")
+                        raise Exception(f"Failed to execute [{cmd_list}], exitcode={exitcode}")
                 lines = data.splitlines()
                 log_level = LogLevel.info if key.fileobj is process.stdout else LogLevel.warning
                 for line in lines:

@@ -12,7 +12,12 @@ class CassandraStress:
     def __init__(self, load_ips, properties, scylla_tools=True, performance_governor=True):
         self.properties = properties
         self.load_ips = load_ips
-        self.ssh_user = properties.get('load_generator_user')
+        self.ssh_user = properties.get('loadgenerator_user')
+
+        # needed for compatibility reasons.
+        if not self.ssh_user:
+            self.ssh_user = properties.get('load_generator_user')
+
         self.scylla_tools = scylla_tools
         self.performance_governor = performance_governor
 

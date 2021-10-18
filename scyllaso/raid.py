@@ -1,5 +1,5 @@
 from scyllaso.ssh import PSSH
-
+from scyllaso.util import log
 
 class RAID:
     def __init__(self, public_ips, user, device_name_wildcard, raid_device_name, level, properties):
@@ -12,7 +12,7 @@ class RAID:
 
     def install(self):
         ips = ','.join(self.public_ips)
-        print(f'    [{ips}] raid: starting creating RAID')
+        log(f'[{ips}] raid: starting creating RAID')
         pssh = PSSH(self.public_ips, self.user, self.properties['ssh_options'])
         pssh.exec(f"""
             if [[ ! -b /dev/md/{self.raid_device_name} ]]; then
@@ -32,4 +32,4 @@ class RAID:
                 sudo chown $(id -u) {self.raid_device_name}
             fi
         """)
-        print(f'    [{ips}] raid: finished creating RAID')
+        log(f'[{ips}] raid: finished creating RAID')
