@@ -310,6 +310,6 @@ class SSH:
                 sudo cpupower frequency-info
                 echo "===================================================="                      
             else
-                echo "Governor [{governor}] is not supported"
+                echo "Skipping set governor, [{governor}] is not supported"
             fi             
         """)

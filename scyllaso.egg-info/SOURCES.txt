@@ -122,6 +122,6 @@ scyllaso/bin/make_key.py
 scyllaso/bin/provision_terraform.py
 scyllaso/bin/scylla_monitoring_start.py
 scyllaso/bin/scylla_monitoring_stop.py
-scyllaso/lib/HdrHistogram-2.1.9.jar
+scyllaso/lib/HdrHistogram-2.1.12.jar
 scyllaso/lib/HdrLogProcessing-1.0-SNAPSHOT.jar
 scyllaso/lib/processor.jar

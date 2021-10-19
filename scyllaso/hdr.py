@@ -132,7 +132,7 @@ class HdrLogProcessor:
 
         for tag in tags:
             # process twice; once to get the csv formatted output and again for the non csv output.
-            logprocessor = f'{self.java_path} -cp {self.lib_dir}/HdrHistogram-2.1.9.jar org.HdrHistogram.HistogramLogProcessor'
+            logprocessor = f'{self.java_path} -cp {self.lib_dir}/HdrHistogram-2.1.12.jar org.HdrHistogram.HistogramLogProcessor'
             args = f'-i {filename} -o {filename_no_ext + "_" + tag} -tag {tag} -csv'
             os.system(f'{logprocessor} {args}')
             os.rename(f'{filename_no_ext + "_" + tag}.hgrm', f'{filename_no_ext + "_" + tag}.hgrm.csv')
