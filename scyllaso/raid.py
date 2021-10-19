@@ -1,6 +1,7 @@
 from scyllaso.ssh import PSSH
 from scyllaso.util import log
 
+
 class RAID:
     def __init__(self, public_ips, user, device_name_wildcard, raid_device_name, level, properties):
         self.level = level
