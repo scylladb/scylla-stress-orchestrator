@@ -1,7 +1,6 @@
-from datetime import datetime
 from time import sleep
 from scyllaso.ssh import PSSH, SSH
-from scyllaso.util import log, run_parallel, log_important
+from scyllaso.util import log, run_parallel, log_important, log_machine
 from scyllaso.cql import wait_for_cql_start
 
 
@@ -100,18 +99,18 @@ class Scylla:
         log_important("Installing Scylla: done")
 
     def append_configuration(self, configuration):
-        print(f"Appending configuration to nodes {self.cluster_public_ips}: {configuration}")
+        log(f"Appending configuration to nodes {self.cluster_public_ips}: {configuration}")
         pssh = PSSH(self.cluster_public_ips, self.ssh_user, self.properties['ssh_options'])
         pssh.exec(f"sudo sh -c \"echo '{configuration}' >> /etc/scylla/scylla.yaml\"")
 
     def start(self):
-        print(f"Starting Scylla nodes {self.cluster_public_ips}")
+        log(f"Starting Scylla nodes {self.cluster_public_ips}")
         for public_ip in self.cluster_public_ips:
             ssh = self.__new_ssh(public_ip)
             ssh.exec("sudo systemctl start scylla-server")
             wait_for_cql_start(public_ip)
-            print("Node finished bootstrapping at:", datetime.now().strftime("%H:%M:%S"), public_ip)
-        print(f"Starting Scylla nodes {self.cluster_public_ips}: done")
+            log_machine(public_ip, "Node finished bootstrapping")
+        log(f"Starting Scylla nodes {self.cluster_public_ips}: done")
 
     def nodetool(self, command, load_index=None):
         if load_index is None:
@@ -122,7 +121,7 @@ class Scylla:
 
     def stop(self, load_index=None, erase_data=False):
         if load_index is None:
-            print("Not implemented!")
+            log("Not implemented!")
         else:
             self.nodetool("drain", load_index=load_index)
             ssh = self.__new_ssh(self.cluster_public_ips[load_index])

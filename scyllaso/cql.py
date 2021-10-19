@@ -1,10 +1,11 @@
 from time import sleep
 from datetime import datetime, timedelta
 import socket
+from scyllaso.util import log_machine
 
 
 def wait_for_cql_start(node_ip, timeout=7200, connect_timeout=10, max_tries_per_second=2):
-    print(f'    [{node_ip}] Waiting for CQL port to start (meaning node bootstrap finished). This could take a while.')
+    log_machine(node_ip, 'Waiting for CQL port to start (meaning node bootstrap finished). This could take a while.')
 
     backoff_interval = 1.0 / max_tries_per_second
     timeout_point = datetime.now() + timedelta(seconds=timeout)
@@ -22,10 +23,10 @@ def wait_for_cql_start(node_ip, timeout=7200, connect_timeout=10, max_tries_per_
                 sleep(backoff_interval)
                 if datetime.now() > print_feedback_point:
                     print_feedback_point = datetime.now() + timedelta(seconds=feedback_interval)
-                    print(f'    [{node_ip}] Still waiting for CQL port to start...')
+                    log_machine(node_ip, 'Still waiting for CQL port to start...')
 
             else:
-                print(f'    [{node_ip}] Successfully connected to CQL port.')
+                log_machine(node_ip, 'Successfully connected to CQL port.')
                 return
 
     raise Exception(f'Waiting for CQL to start timed out after {timeout} seconds for node: {node_ip}.')
