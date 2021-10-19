@@ -15,7 +15,7 @@ class HdrLogProcessor:
         self.cooldown_seconds = cooldown_seconds
         module_dir = os.path.dirname(pkg_resources.resource_filename('scyllaso', '__init__.py'))
         self.lib_dir = os.path.join(module_dir, "lib")
-        print("lib_dir:" + str(self.lib_dir))
+        #print("lib_dir:" + str(self.lib_dir))
 
     def __trim(self, file):
         filename = os.path.basename(file)
