@@ -26,8 +26,8 @@ def get_plan(args):
 def provision():
     parser = argparse.ArgumentParser()
     parser.add_argument("terraform_plan", help="The terraform_plan to execute (directory).", nargs='?')
-    parser.add_argument("--options", help="Additional Terraform options", nargs='?', default="")
-    parser.add_argument("--workspace", help="Specifies the Terraform workspace", nargs='?')
+    parser.add_argument("--options", help="Additional Terraform options", default="")
+    parser.add_argument("--workspace", help="Specifies the Terraform workspace")
     args = parser.parse_args()
     terraform.apply(get_plan(args), workspace=args.workspace, options=args.options)
 
@@ -35,7 +35,7 @@ def provision():
 def unprovision():
     parser = argparse.ArgumentParser()
     parser.add_argument("terraform_plan", help="The terraform_plan to execute (directory).", nargs='?')
-    parser.add_argument("--options", help="Additional Terraform options", nargs='?', default="")
-    parser.add_argument("--workspace", help="Specifies the Terraform workspace", nargs='?')
+    parser.add_argument("--options", help="Additional Terraform options", default="")
+    parser.add_argument("--workspace", help="Specifies the Terraform workspace")
     args = parser.parse_args()
     terraform.destroy(get_plan(args), workspace=args.workspace, options=args.options)

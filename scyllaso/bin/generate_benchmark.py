@@ -13,7 +13,7 @@ def cli():
     parser.add_argument("--template",
                         help="The name of the benchmark template.", default="default")
     parser.add_argument("--resourceid",
-                        help="An extra id to make resources unique. By default the username is used.", nargs='?')
+                        help="An extra id to make resources unique. By default the username is used.")
     parser.add_argument("--list", help="List available benchmark templates", action='store_true')
     args = parser.parse_args()
 

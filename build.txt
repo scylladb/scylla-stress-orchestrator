@@ -13,12 +13,18 @@ Go to the 'scylla-stress-orchestrator' and type the following command to build t
 ```
 python setup.py sdist
 ```
-This will create the binary in the 'dist' directory.
+This will create the distribution in the 'dist' directory.
 
-To install.
+To install the distribution type:
 ```
 cd ..
 pip install --force-reinstall scylla-stress-orchestrator/dist/scyllaso-0.1.dev2.tar.gz
+```
+
+To verify it is working correctly, type:
+
+```
+generate_benchmark --help
 ```
 
 ============== Releasing ==============

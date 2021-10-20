@@ -4,6 +4,7 @@ MANIFEST.in
 README.md
 build.txt
 pyproject.toml
+set_env.sh
 setup.py
 scyllaso/__init__.py
 scyllaso/ansible.py
@@ -28,6 +29,7 @@ scyllaso.egg-info/SOURCES.txt
 scyllaso.egg-info/dependency_links.txt
 scyllaso.egg-info/entry_points.txt
 scyllaso.egg-info/top_level.txt
+scyllaso/benchmarks/cassandra4-scylla-comparison/README.txt
 scyllaso/benchmarks/cassandra4-scylla-comparison/benchmark_drivers.py
 scyllaso/benchmarks/cassandra4-scylla-comparison/benchmark_latency_throughput.py
 scyllaso/benchmarks/cassandra4-scylla-comparison/benchmark_latency_throughput_5x.py
