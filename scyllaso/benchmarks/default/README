@@ -6,7 +6,7 @@ And modify the variables like the machine types etc.
 
 To provision the environment, execute the following:
 
-provision-terraform
+provision_terraform
 
 The first time this script is called, it will create the following EC2 resources:
 - security groups
@@ -36,7 +36,7 @@ trials/dummy-benchmark/
 
 After you are finished with running your benchmark, you can destroy the environment using:
 
-unprovision-terraform
+unprovision_terraform
 
 This will destroy all the created EC2 resources. If you automatically want to destroy the 
 environment after completing the benchmark, uncomment the last part of the benchmark.py file.
