@@ -1,22 +1,25 @@
-==== Making a release ====
+=== Ubuntu build requirements =====
 
-https://the-hitchhikers-guide-to-packaging.readthedocs.io/en/latest/quickstart.html
+Build requirements for Ubuntu
 
+```
+sudo apt-get install -y python3
+sudo apt-get install -y python-is-python3
+sudo apt-get install -y python-setuptools
+sudo apt-get install -y pip
+```
+
+Go to the 'scylla-stress-orchestrator' and type the following command to build the project:
+```
 python setup.py sdist
-
-==== How to build ====
-
-python setup.py sdist
-
 ```
-Installing the distribution locally:
-```
+This will create the binary in the 'dist' directory.
 
-This works if you call it from a different directory
+To install.
 ```
-pip install --force-reinstall /eng/scylla/scylla-stress-orchestrator/dist/scyllaso-0.1.dev2.tar.gz
+cd ..
+pip install --force-reinstall scylla-stress-orchestrator/dist/scyllaso-0.1.dev2.tar.gz
 ```
-https://stackoverflow.com/questions/40695757/create-a-python-package-install-it-as-source-distribution-and-not-a-egg
 
 ============== Releasing ==============
 
