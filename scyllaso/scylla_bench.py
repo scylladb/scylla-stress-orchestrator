@@ -2,6 +2,8 @@ import os
 import time
 
 from datetime import datetime
+
+from scyllaso.hdr import HdrLogProcessor
 from scyllaso.ssh import SSH
 from scyllaso.util import run_parallel, WorkerThread, log_important, log_machine, log
 
@@ -130,11 +132,11 @@ class ScyllaBench:
         os.makedirs(dest_dir, exist_ok=True)
         log_machine(ip, f'Collecting to [{dest_dir}]')
         ssh = self.__new_ssh(ip)
-        ssh.scp_from_remote(f'*.log', dest_dir)
-        ssh.exec(f'rm -fr *.log')
+        ssh.scp_from_remote(f'*.{{hdr,log}}', dest_dir)
+        ssh.exec(f'rm -fr *.hdr *.log')
         log_machine(ip, f'Collecting to [{dest_dir}] done')
 
-    def collect_results(self, dir):
+    def collect_results(self, dir, warmup_seconds=None, cooldown_seconds=None):
         """
         Parameters
         ----------
@@ -144,6 +146,13 @@ class ScyllaBench:
 
         log_important(f"Collecting results: started")
         run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
+
+        p = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
+        p.trim_recursivly(dir)
+        p.merge_recursivly(dir)
+        p.process_recursivly(dir)
+        p.summarize_recursivly(dir)
+
         log_important(f"Collecting results: done")
         log(f"Results can be found in [{dir}]")
 
