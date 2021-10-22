@@ -132,7 +132,7 @@ class Cassandra:
         for public_ip in self.cluster_public_ips:
             self.__start(public_ip)
             wait_for_cql_start(public_ip)
-            log_machine(public_ip, f"""Node finished bootstrapping at {datetime.now().strftime("%H:%M:%S")}""")
+            log_machine(public_ip, f"""Node finished bootstrapping""")
             self.__start_exporter(public_ip)
         log_important(f"Starting Cassandra nodes {self.cluster_public_ips}: done")
 
