@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='scyllaso',
-    version='0.1.dev2',
+    version='0.1.dev3',
     author='Peter Veentjer',
     author_email='peter.veentjer@scylladb.com',
     description='The Scylla Stress Orchestrator is Python 3 based framework for running various '
