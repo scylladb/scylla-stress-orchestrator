@@ -9,7 +9,7 @@ def cli():
     args = parser.parse_args()
 
     old_wd = os.getcwd()
-    data_dir = args.dir
+    data_dir = args.dir[0]
 
     if not os.path.isabs(data_dir):
         data_dir = os.path.join(old_wd, data_dir)
