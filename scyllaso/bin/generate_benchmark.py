@@ -17,7 +17,6 @@ def cli():
     parser.add_argument("--list", help="List available benchmark templates", action='store_true')
     args = parser.parse_args()
 
-
     if args.list:
         print("default")
         print("cassandra4-scylla-comparison")
