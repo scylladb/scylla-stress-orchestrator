@@ -29,13 +29,21 @@ items = 10_000_000
 
 # The running time of the benchmark
 duration = "12m"
-# 2 minutes of warmup are removed from the duration.
+# The warmup period is removed from the collected data.
 warmup_seconds = 120
 
 # Configuration for throughput test 
 rate = f'threads=200'
 # Configuration for a latency: fixed number of requests per second
 # rate = f'threads=200 fixed="2000/s"'
+
+# Workload configuration
+# 100% writes.
+ops = "ops(write=1)"
+# 100% reads.
+# ops = "ops(read=1)"
+# 25% writes and 75% reads.
+# ops = "ops(write=1,read=3)"
 
 profile = "stress_profile.yaml"
 
@@ -49,7 +57,7 @@ cs.insert(profile, items, cluster_string)
 scylla.restart_cluster(env['cluster_public_ips'], props['cluster_user'], props['ssh_options'])
 
 # Actual benchmark
-cs.stress(f'user profile=./{profile} "ops(insert=1)" duration={duration} -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate {rate} -node {cluster_string}')
+cs.stress(f'user profile=./{profile} "{ops}" duration={duration} -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate {rate} -node {cluster_string}')
 
 # collect the results.
 cs.collect_results(iteration.dir, warmup_seconds=warmup_seconds)

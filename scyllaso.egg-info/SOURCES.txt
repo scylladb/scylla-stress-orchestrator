@@ -109,7 +109,6 @@ scyllaso/benchmarks/default/README
 scyllaso/benchmarks/default/cassandra_stress.py
 scyllaso/benchmarks/default/properties.yml
 scyllaso/benchmarks/default/scylla_bench.py
-scyllaso/benchmarks/default/stress_example.yaml
 scyllaso/benchmarks/default/stress_profile.yaml
 scyllaso/benchmarks/default/ec2-scylla/main.tf
 scyllaso/benchmarks/default/ec2-scylla/node_exporter.tpl
