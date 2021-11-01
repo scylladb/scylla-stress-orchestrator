@@ -75,7 +75,7 @@ variable "prometheus_ami" {
 }
 
 variable "scylla_monitoring_version" {
-    default = "3.8.2"
+    default = "3.9.0"
 }
 
 # ============ Load Generators  ===============

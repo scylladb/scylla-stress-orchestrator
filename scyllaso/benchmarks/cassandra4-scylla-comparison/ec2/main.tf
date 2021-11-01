@@ -263,8 +263,8 @@ resource "aws_instance" "prometheus" {
       "sudo apt-get -y install -q docker.io",
       "sudo usermod -aG docker $USER",
       "sudo systemctl enable docker",
-      "wget -q https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.6.3.tar.gz",
-      "tar -xf scylla-monitoring-3.6.3.tar.gz",
+      "wget -q https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.9.0.tar.gz",
+      "tar -xf scylla-monitoring-3.9.0.tar.gz",
       "sudo systemctl restart docker",
     ]
   }
@@ -296,7 +296,7 @@ resource "null_resource" "configure-prometheus" {
       cluster = "cluster1"
       dc      = "us-east-2"
     })
-    destination = "scylla-monitoring-scylla-monitoring-3.6.3/prometheus/scylla_servers.yml"
+    destination = "scylla-monitoring-scylla-monitoring-3.9.0/prometheus/scylla_servers.yml"
   }
 
   provisioner "file" {
@@ -305,13 +305,13 @@ resource "null_resource" "configure-prometheus" {
       cluster = "cluster1"
       dc      = "us-east-2"
     })
-    destination = "scylla-monitoring-scylla-monitoring-3.6.3/prometheus/node_exporter"
+    destination = "scylla-monitoring-scylla-monitoring-3.9.0/prometheus/node_exporter"
   }
 
   provisioner "remote-exec" {
     inline = [
       "mkdir -p data",
-      "cd scylla-monitoring-scylla-monitoring-3.6.3",
+      "cd scylla-monitoring-scylla-monitoring-3.9.0",
       "./kill-all.sh",
       "./start-all.sh -v 4.3 -d ../data",
     ]
