@@ -51,8 +51,18 @@ variable "scylla_ami" {
     # https://fedoraproject.org/wiki/EPEL
 
     #  4.4.4
-    default = "ami-0c0575324d81db474"
+    # default = "ami-0c0575324d81db474"
+
+    # 4.5.1
+    default = "ami-0cfb0cdb8cfa8df65"
 }
+
+variable "scylla_version" {
+    # The scylla_ami variable picks the right scylla version to use.
+    # The scylla_version is just used by Prometheus
+    default = "4.5"
+}
+
 
 
 # ============ Prometheus instance ===============

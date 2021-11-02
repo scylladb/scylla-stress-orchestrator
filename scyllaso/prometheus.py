@@ -23,7 +23,7 @@ def download_and_clear(env, props, iteration):
 
 class Prometheus:
 
-    def __init__(self, ip, user, ssh_options, scylla_version="4.4"):
+    def __init__(self, ip, user, ssh_options, scylla_version="4.5.1"):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options

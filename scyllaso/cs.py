@@ -38,12 +38,12 @@ class CassandraStress:
                 if hash apt-get 2>/dev/null; then
                     sudo apt-get install -y apt-transport-https
                     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 5e08fbd8b5d6ec9c
-                    sudo curl -L --output /etc/apt/sources.list.d/scylla.list http://downloads.scylladb.com/deb/ubuntu/scylla-4.3-$(lsb_release -s -c).list
+                    sudo curl -L --output /etc/apt/sources.list.d/scylla.list http://downloads.scylladb.com/deb/ubuntu/scylla-4.5-$(lsb_release -s -c).list
                     sudo apt-get update -y
                     sudo apt-get install -y scylla-tools
                 elif hash yum 2>/dev/null; then
                     sudo yum install  -y -q https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-                    sudo curl -o /etc/yum.repos.d/scylla.repo -L http://repositories.scylladb.com/scylla/repo/603fc559-4518-4f8e-8ceb-2851dec4ab23/centos/scylladb-4.3.repo
+                    sudo curl -o /etc/yum.repos.d/scylla.repo -L http://downloads.scylladb.com/rpm/centos/scylla-4.5.repo                    
                     sudo yum install -y -q scylla-tools
                 else
                     echo "Cannot install scylla-tools: yum/apt not found"

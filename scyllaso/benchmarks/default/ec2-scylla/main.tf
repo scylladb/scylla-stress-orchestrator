@@ -310,7 +310,7 @@ resource "null_resource" "configure-prometheus" {
             "mkdir -p data",
             "cd scylla-monitoring",
             "./kill-all.sh",
-            "./start-all.sh -v 4.4 -d ../data",
+            "./start-all.sh -v ${var.scylla_version} -d ../data",
         ]
     }
 }
