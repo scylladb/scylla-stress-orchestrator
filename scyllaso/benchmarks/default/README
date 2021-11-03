@@ -8,7 +8,7 @@ To provision the environment, execute the following:
 
 provision_terraform
 
-The first time this script is called, it will create the following EC2 resources:
+After completion of this call, the following EC2 resources have been created:
 - security groups
 - keypair
 - the Scylla machine(s)
