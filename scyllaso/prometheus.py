@@ -20,6 +20,13 @@ def download_and_clear(env, props, iteration):
     prometheus.data_dir_rm()
     prometheus.start()
 
+def clear(env, props):
+    prometheus = Prometheus(env['prometheus_public_ip'][0],
+                            props['prometheus_user'],
+                            props['ssh_options'])
+    prometheus.stop()
+    prometheus.data_dir_rm()
+    prometheus.start()
 
 class Prometheus:
 

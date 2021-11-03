@@ -22,7 +22,7 @@ Before you run a benchmark, you need to load data in cluster. This is done using
 
 ./load_data.py
 
-Once the data has been loaded, a cassandra-stress benchmark can be executed using:
+Once the data has been loaded, a scylla-bench benchmark can be executed using:
 
 ./benchmark.py
 

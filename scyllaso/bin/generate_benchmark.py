@@ -20,6 +20,7 @@ def cli():
     if args.list:
         print("default")
         print("cassandra4-scylla-comparison")
+        print("scylla-bench")
         return
 
     if not args.name:

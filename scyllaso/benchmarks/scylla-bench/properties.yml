@@ -1,0 +1,12 @@
+---
+cassandra_version: 3.11.10
+loadgenerator_user: ubuntu
+terraform_plan: ec2-scylla
+ssh_options: -i key -o StrictHostKeyChecking=no -o ConnectTimeout=60
+cluster_user: centos
+prometheus_user: ubuntu
+# Set this property if you want to control the JVM being used.
+# jvm_path: /eng/jdk/jdk1.8.0_251/
+items: 10_000_000
+duration: 10m
+benchmark_name: dummy-benchmark
