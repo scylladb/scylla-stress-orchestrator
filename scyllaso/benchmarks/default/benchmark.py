@@ -33,7 +33,7 @@ cs = CassandraStress(env['loadgenerator_public_ips'], props)
 cs.install()
 cs.prepare()
 cs.upload(profile)
-cs.stress(f'user profile=./{profile} "{ops}" duration={duration} -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 -rate {rate} -node {cluster_string}')
+cs.stress(f'user profile=./{profile} "{ops}" duration={duration} -pop seq=1..{items} -log hdrfile=profile.hdr -graph file=report.html title=benchmark revision=benchmark-0 -mode native cql3 maxPending=1024 -rate {rate} -node {cluster_string}')
 cs.collect_results(iteration.dir, warmup_seconds=warmup_seconds)
 
 prometheus.download_and_clear(env, props, iteration)
