@@ -30,7 +30,7 @@ def clear(env, props):
 
 class Prometheus:
 
-    def __init__(self, ip, user, ssh_options, scylla_version="4.5.1"):
+    def __init__(self, ip, user, ssh_options, scylla_version="4.5.0"):
         self.ip = ip
         self.user = user
         self.ssh_options = ssh_options

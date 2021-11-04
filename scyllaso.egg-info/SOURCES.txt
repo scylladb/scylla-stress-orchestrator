@@ -107,7 +107,7 @@ scyllaso/benchmarks/cassandra4-scylla-comparison/ec2/variables.tf
 scyllaso/benchmarks/default/.gitignore
 scyllaso/benchmarks/default/README
 scyllaso/benchmarks/default/benchmark.py
-scyllaso/benchmarks/default/fill.py
+scyllaso/benchmarks/default/load_data.py
 scyllaso/benchmarks/default/properties.yml
 scyllaso/benchmarks/default/stress_profile.yaml
 scyllaso/benchmarks/default/ec2-scylla/main.tf
@@ -117,7 +117,7 @@ scyllaso/benchmarks/default/ec2-scylla/variables.tf
 scyllaso/benchmarks/scylla-bench/.gitignore
 scyllaso/benchmarks/scylla-bench/README
 scyllaso/benchmarks/scylla-bench/benchmark.py
-scyllaso/benchmarks/scylla-bench/fill.py
+scyllaso/benchmarks/scylla-bench/load_data.py
 scyllaso/benchmarks/scylla-bench/properties.yml
 scyllaso/benchmarks/scylla-bench/ec2-scylla/main.tf
 scyllaso/benchmarks/scylla-bench/ec2-scylla/node_exporter.tpl
