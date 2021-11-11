@@ -7,10 +7,17 @@ from scyllaso.ssh import SSH
 from scyllaso.util import run_parallel
 
 
-def load_yaml(path):
-    with open(path) as f:
-        return yaml.load(f, Loader=yaml.FullLoader)
-
+def load_yaml(*files):
+    result = {}
+    l = []
+    for file in files:
+        l.append(file)
+    l.reverse()
+    for file in l:
+        with open(file) as f:
+            r = yaml.load(f, Loader=yaml.FullLoader)
+            result.update(r)
+    return result
 
 class Iteration:
 

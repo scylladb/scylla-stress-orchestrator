@@ -289,6 +289,7 @@ class SSH:
             if ! hash cpupower 2>/dev/null; then
                 echo "Installing cpupower"
                 if hash apt-get 2>/dev/null; then
+                    sudo rm /var/lib/dpkg/lock-frontend
                     sudo apt-get -y -qq update
                     version=$(uname -r)
                     sudo apt-get -y -qq install linux-tools-$version

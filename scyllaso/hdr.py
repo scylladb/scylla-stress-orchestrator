@@ -143,11 +143,11 @@ class HdrLogProcessor:
         os.chdir(old_cwd)
 
     def process_recursivly(self, dir):
-        log_important("HdrLogProcessor.summarize_recursively")
+        log_important("HdrLogProcessor.process_recursively")
         for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
             log(hdr_file)
             self.__process(hdr_file)
-        log_important("HdrLogProcessor.summarize_recursively")
+        log_important("HdrLogProcessor.process_recursively")
 
 
 ProfileSummaryResult = namedtuple('ProfileSummaryResult',

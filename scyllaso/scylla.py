@@ -5,7 +5,7 @@ from scyllaso.cql import wait_for_cql_start
 
 
 def clear_cluster(cluster_public_ips, cluster_user, ssh_options, duration_seconds=90):
-    log("Shutting down cluster and removing all data")
+    log_important("Shutting down cluster and removing all data")
     pssh = PSSH(cluster_public_ips, cluster_user, ssh_options)
     # pssh.exec("nodetool flush")
     log("Stopping scylla")
@@ -18,11 +18,11 @@ def clear_cluster(cluster_public_ips, cluster_user, ssh_options, duration_second
     pssh.exec("sudo systemctl start scylla-server")
     log(f"Waiting {duration_seconds} seconds")
     sleep(duration_seconds)
-    log("Cluster cleared and restarted")
+    log_important("Cluster cleared and restarted")
 
 
 def restart_cluster(cluster_public_ips, cluster_user, ssh_options, duration_seconds=90):
-    log("Restart cluster ")
+    log_important("Restart cluster ")
     pssh = PSSH(cluster_public_ips, cluster_user, ssh_options)
     log("nodetool drain")
     pssh.exec("nodetool drain")
@@ -30,30 +30,30 @@ def restart_cluster(cluster_public_ips, cluster_user, ssh_options, duration_seco
     pssh.exec("sudo systemctl restart scylla-server")
     log(f"Waiting {duration_seconds} seconds")
     sleep(duration_seconds)
-    log("Cluster restarted")
+    log_important("Cluster restarted")
 
 
 def nodes_remove_data(cluster_user, ssh_options, *public_ips):
-    log(f"Removing data from nodes {public_ips}")
+    log_important(f"Removing data from nodes {public_ips}")
     pssh = PSSH(public_ips, cluster_user, ssh_options)
     pssh.exec("sudo rm -fr /var/lib/scylla/data/*")
     pssh.exec("sudo rm -fr /var/lib/scylla/commitlog/*")
-    log(f"Removing data from nodes {public_ips}: done")
+    log_important(f"Removing data from nodes {public_ips}: done")
 
 
 def nodes_stop(cluster_user, ssh_options, *public_ips):
-    log(f"Stopping nodes {public_ips}")
+    log_important(f"Stopping nodes {public_ips}")
     pssh = PSSH(public_ips, cluster_user, ssh_options)
     pssh.exec("nodetool flush")
     pssh.exec("sudo systemctl stop scylla-server")
-    log(f"Stopping nodes {public_ips}: done")
+    log_important(f"Stopping nodes {public_ips}: done")
 
 
 def nodes_start(cluster_user, ssh_options, *public_ips):
-    log(f"Starting nodes {public_ips}")
+    log_important(f"Starting nodes {public_ips}")
     pssh = PSSH(public_ips, cluster_user, ssh_options)
     pssh.exec("sudo systemctl start scylla-server")
-    log(f"Starting nodes {public_ips}: done")
+    log_important(f"Starting nodes {public_ips}: done")
 
 
 # Assumes Scylla was started from official Scylla AMI.

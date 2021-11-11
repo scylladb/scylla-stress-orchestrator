@@ -204,14 +204,15 @@ class CassandraStress:
         log_important(f"Collecting results: done")
         log(f"Results can be found in [{dir}]")
 
-    def __prepare(self, ip):
+    def __prepare(self, ip, kill_java):
         log_machine(ip, f'Preparing: started')
         ssh = self.__new_ssh(ip)
         # we need to make sure that the no old load generator is still running.
-        ssh.exec(f'killall -q -9 java')
+        if kill_java:
+            ssh.exec(f'killall -q -9 java')
         log_machine(ip, f'Preparing: done')
 
-    def prepare(self):
+    def prepare(self, kill_java=True):
         log_important(f"Preparing load generator: started")
-        run_parallel(self.__prepare, [(ip,) for ip in self.load_ips])
+        run_parallel(self.__prepare, [(ip,kill_java) for ip in self.load_ips])
         log_important(f"Preparing load generator: done")
