@@ -270,14 +270,16 @@ class SSH:
                 fi
                 """, ignore_errors=ignore_errors)
 
-    def set_file_property(self, file_path, property, seperator, value):
+    def set_yaml_property(self, file_path, property, value):
         self.exec(f"""
             set -e
             sudo touch {file_path}
-            if grep -q -E "^\\s*{property}\\s*{seperator}.*" {file_path}; then 
-                sudo sed -i "s/^\\s*{property}\\s*{seperator}.*/{property + seperator + value}/g" {file_path}
+            if grep -q -E "^\\s*{property}\\s*:.*" {file_path}; then
+                #echo "Property {property} was found" 
+                sudo sed -i "s/^\\s*{property}\\s*:.*/{property}: {value}/g" {file_path}
             else
-                sudo sh -c "'echo {property + seperator + value}' >> {file_path}"
+                #echo "Property {property} was not found"
+                echo '{property}: {value}' | sudo tee -a {file_path}            
             fi
         """)
 

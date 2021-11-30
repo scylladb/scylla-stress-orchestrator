@@ -9,7 +9,7 @@ sudo apt-get install -y python-setuptools
 sudo apt-get install -y pip
 ```
 
-Go to the 'scylla-stress-orchestrator' and type the following command to build the project:
+Go to the 'scylla-stress-orchestrator' directory and type the following command to build the project:
 ```
 python setup.py sdist
 ```

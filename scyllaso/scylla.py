@@ -59,7 +59,8 @@ def nodes_start(cluster_user, ssh_options, *public_ips):
 # Assumes Scylla was started from official Scylla AMI.
 class Scylla:
 
-    def __init__(self, cluster_public_ips, cluster_private_ips, seed_private_ip, properties, cluster_name="cluster-sso"):
+    def __init__(self, cluster_public_ips, cluster_private_ips, seed_private_ip, properties,
+                 cluster_name="cluster-sso"):
         self.properties = properties
         self.cluster_public_ips = cluster_public_ips
         self.cluster_private_ips = cluster_private_ips
@@ -87,10 +88,12 @@ class Scylla:
         ssh.exec("sudo rm -rf /var/lib/scylla/commitlog/*")
 
         # Patch configuration files
-        ssh.exec(f"sudo sed -i \"s/cluster_name:.*/cluster_name: {self.cluster_name}/g\" /etc/scylla/scylla.yaml")
         ssh.exec(f'sudo sed -i \"s/seeds:.*/seeds: {self.seed_private_ip} /g\" /etc/scylla/scylla.yaml')
-        ssh.exec("sudo sh -c \"echo 'compaction_static_shares: 100' >> /etc/scylla/scylla.yaml\"")
-        ssh.exec("sudo sh -c \"echo 'compaction_enforce_min_threshold: true' >> /etc/scylla/scylla.yaml\"")
+        ssh.set_yaml_property("/etc/scylla/scylla.yaml", "authenticator", "PasswordAuthenticator")
+        ssh.set_yaml_property("/etc/scylla/scylla.yaml", "cluster_name", self.cluster_name)
+        ssh.set_yaml_property("/etc/scylla/scylla.yaml", "compaction_static_shares", "100")
+        ssh.set_yaml_property("/etc/scylla/scylla.yaml", "compaction_enforce_min_threshold", "100")
+        ssh.set_yaml_property("/etc/scylla/scylla.yaml", "compaction_static_shares", "true")
 
     def install(self):
         log_important("Installing Scylla: started")
