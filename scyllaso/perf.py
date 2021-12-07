@@ -37,6 +37,7 @@ class Perf:
 
         log_important("Installing debuginfo: started")
         pssh.try_install("scylla_debuginfo")
+        pssh.try_install("scylla-server-dbg")
         log_important("Installing debuginfo: done")
 
     def __install_perf(self):
