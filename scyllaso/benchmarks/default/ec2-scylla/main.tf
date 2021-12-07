@@ -146,33 +146,6 @@ resource "aws_instance" "cluster" {
     }
 }
 
-resource "null_resource" "cluster" {
-
-    triggers = {
-        cluster_instance_ids = join(",", aws_instance.cluster.*.id)
-    }
-
-    connection {
-        type        = "ssh"
-        host        = element(aws_instance.cluster.*.public_ip, count.index)
-        user        = var.cluster_user
-        private_key = file(var.private_key_location)
-        timeout     = "8m"
-    }
-
-    provisioner "remote-exec" {
-        inline = [
-            "sudo sed -i \"s/cluster_name:.*/cluster_name: cluster1/g\" /etc/scylla/scylla.yaml",
-            "sudo cat /etc/scylla.d/scylla.yaml >> /etc/scylla.d/scylla.yaml.bak",
-            "sudo echo ------------------------- >> /etc/scylla.d/scylla.yaml.bak",
-            "sudo sed -i \"s/seeds:.*/seeds: ${join(",",aws_instance.cluster[0].private_ip)} /g\" /etc/scylla/scylla.yaml",
-            "sudo systemctl start scylla-server",
-        ]
-    }
-  
-    count = var.cluster_size
-}
-
 output "cluster_public_ips" {
     value = aws_instance.cluster.*.public_ip
 }
