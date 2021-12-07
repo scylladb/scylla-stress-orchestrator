@@ -60,13 +60,14 @@ def nodes_start(cluster_user, ssh_options, *public_ips):
 class Scylla:
 
     def __init__(self, cluster_public_ips, cluster_private_ips, seed_private_ip, properties,
-                 cluster_name="cluster-sso"):
+                 cluster_name="cluster-sso", password_authenticator=False):
         self.properties = properties
         self.cluster_public_ips = cluster_public_ips
         self.cluster_private_ips = cluster_private_ips
         self.seed_private_ip = seed_private_ip
         self.cluster_name = cluster_name
         self.ssh_user = properties['cluster_user']
+        self.password_authenticator = password_authenticator
 
     def __new_ssh(self, ip):
         return SSH(ip, self.ssh_user, self.properties['ssh_options'])
@@ -89,7 +90,8 @@ class Scylla:
 
         # Patch configuration files
         ssh.exec(f'sudo sed -i \"s/seeds:.*/seeds: {self.seed_private_ip} /g\" /etc/scylla/scylla.yaml')
-        ssh.set_yaml_property("/etc/scylla/scylla.yaml", "authenticator", "PasswordAuthenticator")
+        if self.password_authenticator:
+            ssh.set_yaml_property("/etc/scylla/scylla.yaml", "authenticator", "PasswordAuthenticator")
         ssh.set_yaml_property("/etc/scylla/scylla.yaml", "cluster_name", self.cluster_name)
         ssh.set_yaml_property("/etc/scylla/scylla.yaml", "compaction_static_shares", "100")
         ssh.set_yaml_property("/etc/scylla/scylla.yaml", "compaction_enforce_min_threshold", "100")
