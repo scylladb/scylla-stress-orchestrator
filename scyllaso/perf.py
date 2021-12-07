@@ -106,7 +106,7 @@ class Perf:
         """
         log_important(f"Perf: started")
         log(command)
-        pssh = PSSH(self, self.user, self.ssh_options)
+        pssh = PSSH(self.ip_list, self.user, self.ssh_options)
         pssh.exec(f"""
                 cd /tmp
                 {command}
@@ -118,7 +118,7 @@ class Perf:
         Collect the remotely created flame-graphs
         """
         log_important(f"Perf collecting flamegraph: started")
-        pssh = PSSH(self, self.user, self.ssh_options)
+        pssh = PSSH(self.ip_list, self.user, self.ssh_options)
         # --no-online
         pssh.exec(f"""
                 cd /tmp
