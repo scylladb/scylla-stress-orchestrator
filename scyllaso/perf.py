@@ -1,4 +1,4 @@
-from scyllaso.ssh import PSSH, SSH
+from scyllaso.ssh import PSSH
 from scyllaso.util import log_important, log
 
 
@@ -18,13 +18,17 @@ class Perf:
         return PSSH(self.ip_list, self.user, self.ssh_options)
 
     def install(self):
-        # Install all dependencies required for running perf and making flame-graphs.
+        """
+        Install all dependencies required for running perf and making flame-graphs.
+        """
         self.__install_perf()
         self.__install_flamegraph()
         self.__install_scylla_debuginfo()
 
     def __install_scylla_debuginfo(self):
-        # Install scylla debug info
+        """
+        Install scylla debug info
+        """
         pssh = self.__pssh()
 
         if not self.updated:
@@ -68,46 +72,58 @@ class Perf:
         log_important("Perf install flamegraph: done")
 
     def flamegraph_cpu(self, cpu, dir, duration_seconds=60, args="--call-graph lbr -F99", output="flamegraph"):
-        # Creates a flamegraph based on 'perf record -C <cpu>'
+        """
+        Creates a flamegraph based on 'perf record -C <cpu>'
+        """
         data_file = f"{output}.data"
         flamegraph_file = f"{output}.svg"
-        cmd = f"--output {data_file} --cpu {cpu} {args} sleep {duration_seconds}"
+        cmd = f"--output {data_file} --cpu {cpu} {args} -- sleep {duration_seconds}"
         self.record(cmd)
         self.collect_flamegraph(dir, data_file, flamegraph_file)
 
     def list(self):
-        # Runs 'perf list -v' on the remote machines to get an overview of the available events.
+        """
+        Runs 'perf list -v' on the remote machines to get an overview of the available events.
+        """
         self.exec("sudo perf list -v")
 
     def record(self, command):
-        # Runs 'perf record <command>' on the remote machines.
+        """ Runs 'perf record <command>' on the remote machines."""
         cmd = f"sudo perf record {command}"
         self.exec(cmd)
 
     def script(self, command):
-        # Runs 'perf script <command>' on the remote machines.
+        """
+        Runs 'perf script <command>' on the remote machines.
+        """
         cmd = f"sudo perf script {command}"
         self.exec(cmd)
 
     def exec(self, command):
+        """
+        Returns the perf command on the remote machine.
+        The command needs to be the full command like 'sudo perf record ...'
+        """
         log_important(f"Perf: started")
         log(command)
-        ssh = SSH(self.ip_list[0], self.user, self.ssh_options)
-        ssh.exec(f"""
+        pssh = PSSH(self, self.user, self.ssh_options)
+        pssh.exec(f"""
                 cd /tmp
                 {command}
                 """)
         log_important(f"Perf: done")
 
     def collect_flamegraph(self, dir, data_file="perf.data", flamegraph_file="flamegraph.svg"):
-        # Collect the remotely created flame-graphs.
+        """
+        Collect the remotely created flame-graphs
+        """
         log_important(f"Perf collecting flamegraph: started")
-        ssh = SSH(self.ip_list[0], self.user, self.ssh_options)
+        pssh = PSSH(self, self.user, self.ssh_options)
         # --no-online
-        ssh.exec(f"""
+        pssh.exec(f"""
                 cd /tmp
                 sudo perf script -i {data_file} | FlameGraph/stackcollapse-perf.pl | FlameGraph/flamegraph.pl --hash > {flamegraph_file}
                 """)
-        ssh.scp_from_remote(f"/tmp/{flamegraph_file}", dir)
-        ssh.exec(f"rm /tmp/{flamegraph_file}")
+        pssh.scp_from_remote(f"/tmp/{flamegraph_file}", dir)
+        pssh.exec(f"rm /tmp/{flamegraph_file}")
         log_important(f"Perf collecting flamegraph: done")
