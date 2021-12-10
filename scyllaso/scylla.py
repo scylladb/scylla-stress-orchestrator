@@ -112,6 +112,8 @@ class Scylla:
         for public_ip in self.cluster_public_ips:
             ssh = self.__new_ssh(public_ip)
             ssh.exec("sudo systemctl start scylla-server")
+
+        for public_ip in self.cluster_public_ips:
             wait_for_cql_start(public_ip)
             log_machine(public_ip, "Node finished bootstrapping")
         log(f"Starting Scylla nodes {self.cluster_public_ips}: done")
