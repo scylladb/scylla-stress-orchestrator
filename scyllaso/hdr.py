@@ -5,7 +5,13 @@ import pkg_resources
 from collections import namedtuple
 from scyllaso.util import find_java, log_important, log
 
-
+#
+# The HdrLogProcessor is responsible for processing HdrHistogram files. The HdrHistogram files
+# contains the recorded history of latency distributions for each load generator.
+#
+# For more information about HdrHistogram see
+# http://hdrhistogram.org/
+#
 class HdrLogProcessor:
 
     def __init__(self, properties, warmup_seconds=None, cooldown_seconds=None):
@@ -16,6 +22,21 @@ class HdrLogProcessor:
         module_dir = os.path.dirname(pkg_resources.resource_filename('scyllaso', '__init__.py'))
         self.lib_dir = os.path.join(module_dir, "lib")
         #print("lib_dir:" + str(self.lib_dir))
+
+    def process(self, dir):
+        """
+        Processes all the hdr files recursively.
+
+        Parameters
+        ----------
+        dir: str
+            The root directory containing the hdr files.
+        """
+
+        self.__trim_recursivly(dir)
+        self.__merge_recursivly(dir)
+        self.__process_recursivly(dir)
+        self.__summarize_recursivly(dir)
 
     def __trim(self, file):
         filename = os.path.basename(file)
@@ -36,7 +57,7 @@ class HdrLogProcessor:
         os.system(cmd)
         os.chdir(old_cwd)
 
-    def trim_recursivly(self, dir):
+    def __trim_recursivly(self, dir):
         if self.warmup_seconds is None and self.warmup_seconds is None:
             return
 
@@ -52,7 +73,7 @@ class HdrLogProcessor:
 
         log_important("HdrLogProcessor.trim_recursively")
 
-    def merge_recursivly(self, dir):
+    def __merge_recursivly(self, dir):
         log_important("HdrLogProcessor.merge_recursively")
         log(dir)
         # todo be careful with merging the merge file.
@@ -105,7 +126,7 @@ class HdrLogProcessor:
 
         os.chdir(old_cwd)
 
-    def summarize_recursivly(self, dir):
+    def __summarize_recursivly(self, dir):
         log_important("HdrLogProcessor.summarize_recursively")
         for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
             log(hdr_file)
@@ -142,7 +163,7 @@ class HdrLogProcessor:
 
         os.chdir(old_cwd)
 
-    def process_recursivly(self, dir):
+    def __process_recursivly(self, dir):
         log_important("HdrLogProcessor.process_recursively")
         for hdr_file in glob.iglob(dir + '/**/*.hdr', recursive=True):
             log(hdr_file)

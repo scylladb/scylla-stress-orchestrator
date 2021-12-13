@@ -148,10 +148,7 @@ class ScyllaBench:
         run_parallel(self.__collect, [(ip, dir) for ip in self.load_ips])
 
         p = HdrLogProcessor(self.properties, warmup_seconds=warmup_seconds, cooldown_seconds=cooldown_seconds)
-        p.trim_recursivly(dir)
-        p.merge_recursivly(dir)
-        p.process_recursivly(dir)
-        p.summarize_recursivly(dir)
+        p.process(dir)
 
         log_important(f"Collecting results: done")
         log(f"Results can be found in [{dir}]")
