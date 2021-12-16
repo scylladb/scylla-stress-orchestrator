@@ -184,7 +184,7 @@ class SSH:
                 data = key.fileobj.read1().decode()
                 if not data:
                     exitcode = process.poll()
-                    if ignore_errors or exitcode == 0 or exitcode == 1:  # todo: we need to deal better with exit code
+                    if exitcode == 0 or ignore_errors:
                         return
                     else:
                         raise Exception(f"Failed to execute [{cmd_list}], exitcode={exitcode}")

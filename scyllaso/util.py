@@ -18,7 +18,7 @@ class Future:
             while not self.__is_set:
                 self.__condition.wait()
 
-            if self.__val is Exception:
+            if isinstance(self.__val, Exception):
                 raise Exception() from self.__val
             return self.__val
 
@@ -54,19 +54,16 @@ class WorkerThread(Thread):
 
 
 def run_parallel(target, args_list, ignore_errors=False):
-    # print(f"parallel{type(args_list)}")
-    # print(args_list)
     threads = []
     for args in args_list:
-        # print(f"run_parallel loop |{args}|")
-        # print(f"type {type(args)}")
         thread = WorkerThread(target, args)
         thread.start()
         threads.append(thread)
+
     for thread in threads:
         thread.join()
         if not ignore_errors and thread.exception:
-            raise Exception() from thread.exception
+            raise Exception(f"Failed to execute {target} {args_list}") from thread.exception
 
 
 class WorkerThreadLoop(Thread):

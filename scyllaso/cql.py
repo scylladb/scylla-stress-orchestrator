@@ -1,5 +1,6 @@
 from time import sleep
 from datetime import datetime, timedelta
+import uuid
 import socket
 
 from scyllaso.ssh import SSH
@@ -22,17 +23,14 @@ class cqlsh:
     def __new_ssh(self, ip):
         return SSH(ip, self.ssh_user, self.ssh_options)
 
-    def __wait_for_cql_start(self, ip, timeout, connect_timeout, max_tries_per_second):
-        wait_for_cql_start(ip, timeout,connect_timeout, max_tries_per_second)
-
     def wait_for_cql_start(self, timeout=7200, connect_timeout=10, max_tries_per_second=2):
         log_important(f"cql: wait for start")
-        run_parallel(self.__wait_for_cql_start, [(ip, timeout, connect_timeout, max_tries_per_second) for ip in self.ip_list])
+        wait_for_cql_start(self.ip, timeout,connect_timeout, max_tries_per_second)
         log_important(f"cqlsh: running")
 
     def exec(self, cql):
         """
-        Executes a cql command.
+        Executes a CQL command.
 
         Parameters
         ----------
@@ -44,17 +42,19 @@ class cqlsh:
             self.wait_for_cql_start()
             self.started = True
 
+        script_name = str(uuid.uuid4())+".cql"
         log_important(f"cqlsh exec: [{cql}]")
         ssh = self.__new_ssh(self.ip)
-        ssh.exec("touch foo.cql")
-        ssh.exec(f"echo \"{cql}\" > foo.cql")
+        ssh.exec(f"touch {script_name}")
+        ssh.exec(f"echo \"{cql}\" > {script_name}")
         cmd = "cqlsh "
         if self.username:
             cmd += f"-u {self.username} "
         if self.password:
             cmd += f"-p {self.password} "
-        cmd += "-f foo.cql"
+        cmd += f"-f {script_name}"
         ssh.exec(cmd)
+        ssh.exec(f"rm {script_name}")
         log_important(f"cqlsh done")
 
 

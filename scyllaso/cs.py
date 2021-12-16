@@ -72,15 +72,23 @@ class CassandraStress:
         time.sleep(startup_delay)
 
         if self.scylla_tools:
-            full_cmd = f'cassandra-stress {cmd}'
+            cs_cmd = f'cassandra-stress {cmd}'
         else:
             cassandra_version = self.properties['cassandra_version']
             cassandra_stress_dir = f'apache-cassandra-{cassandra_version}/tools/bin'
-            full_cmd = f'{cassandra_stress_dir}/cassandra-stress {cmd}'
+            cs_cmd = f'{cassandra_stress_dir}/cassandra-stress {cmd}'
 
+        log(cs_cmd)
         dt = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        full_cmd = full_cmd + f" 2>&1 | tee -a cassandra-stress-{dt}.log"
-        log(full_cmd)
+        cs_cmd = cs_cmd + f" 2>&1 | tee -a cassandra-stress-{dt}.log"
+
+        full_cmd = f"""
+        set -e
+        set -o pipefail
+        {cs_cmd}
+        set +o pipefail
+        """
+
         self.__new_ssh(ip).exec(full_cmd)
 
     def stress(self, command, load_index=None):
@@ -89,7 +97,6 @@ class CassandraStress:
             run_parallel(self.__stress, [(ip, 10 if i > 0 else 0, command) for i, ip in enumerate(self.load_ips)])
             log_important("Cassandra-Stress: done")
         else:
-            log("using load_index " + str(load_index))
             self.__stress(self.load_ips[load_index], 0, command)
 
     def stress_seq_range(self, row_count, command_part1, command_part2):
@@ -106,7 +113,7 @@ class CassandraStress:
             population_commands.append(
                 f' n={range_points[i + 1] - range_points[i] + 1} -pop seq={range_points[i]}..{range_points[i + 1]} ')
 
-        print(population_commands)
+        log(population_commands)
 
         log_important("Cassandra-Stress: started")
         run_parallel(self.__stress,
@@ -206,7 +213,7 @@ class CassandraStress:
         ssh = self.__new_ssh(ip)
         # we need to make sure that the no old load generator is still running.
         if kill_java:
-            ssh.exec(f'killall -q -9 java')
+            ssh.exec(f'killall -q -9 java || true')
         log_machine(ip, f'Preparing: done')
 
     def prepare(self, kill_java=True):
